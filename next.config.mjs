@@ -12,6 +12,11 @@ const nextConfig = {
         hostname: "localhost",
         pathname: "/**",
       },
+      {
+        protocol: "https",
+        hostname: "group-api-b4pm.onrender.com",
+        pathname: "/**",
+      },
     ],
   },
 };
