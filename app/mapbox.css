@@ -1,0 +1,346 @@
+@import url("https://api.tiles.mapbox.com/mapbox-gl-js/v1.3.1/mapbox-gl.css");
+
+@keyframes fadein {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.mapboxgl-ctrl-logo {
+  display: none !important;
+}
+
+.mapboxgl-ctrl-bottom-right {
+  display: none !important;
+}
+
+/* CSS for the info box */
+.mapboxgl-popup {
+  max-width: 350px !important;
+  animation: fadein 0.2s;
+  /* background-color: #414141; */
+}
+.mapboxgl-popup-content {
+  /* background-color: #555555; */
+  background-color: #07101d;
+  border-radius: 36px;
+  box-shadow: 0 3px 14px rgba(0, 0, 0, 0.4);
+  width: 430px;
+}
+
+.mapboxgl-popup-close-button {
+  font-size: 18px;
+  color: #ddd;
+  display: none;
+}
+
+.mapboxgl-popup-anchor-bottom .mapboxgl-popup-tip {
+  border-top-color: #07101d;
+  border-bottom-color: #07101d;
+}
+
+.info-box {
+  position: absolute;
+  z-index: 999;
+  width: 100%;
+  /* Adjust the width as needed */
+  max-height: 200px;
+  /* Adjust the max-height as needed */
+  background-color: #414141;
+  background-color: #555555;
+  border: 1px solid #ccc;
+  border-radius: 25px !important;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 10px;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  top: 14%;
+}
+
+.infobox_content h2 {
+  margin-top: 0;
+  margin-bottom: 10px;
+  font-size: 18px;
+}
+
+.infobox_content p {
+  margin: 5px 0;
+}
+
+.close-button {
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  cursor: pointer;
+  color: black;
+  float: right;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.infobox_content {
+  color: #cfcfcf;
+  font-size: 16px;
+  line-height: 1.5;
+
+  display: flex;
+}
+.header-content {
+  position: relative;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.header-content > div {
+  display: flex;
+}
+
+.content {
+  color: black;
+  /* Set text color to black */
+  font-size: 16px;
+  /* Set font size */
+  line-height: 1.5;
+  /* Set line height for better readability */
+}
+
+.badge {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  border: 2px solid black;
+  background-color: #ffffff;
+  /* position: absolute; */
+  position: relative;
+  width: 100%;
+  top: -75px;
+  left: 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url("https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  /* Prevent tiling */
+  background-position: center;
+  /* Center the image */
+  background-position: left center;
+  /* Position image on the left */
+  justify-content: space-between;
+}
+
+.badge-text {
+  margin-right: 5px;
+  /* Add some space between the image and the text */
+  font-size: 12px;
+  /* Adjust font size as needed */
+  font-family: Helvetica;
+  color: black;
+  /* Set the text color to black */
+  font-weight: 900;
+  position: absolute;
+  top: 25%;
+  right: 0;
+  margin-left: 5px;
+}
+.traycontainer {
+  /* background: white; */
+  position: absolute;
+  height: 40%;
+  width: 100%;
+  position: fixed;
+  z-index: 95%;
+  left: 0;
+  transform: translateY(100%);
+  top: 57%;
+  transition: top 0.3s ease; /* Add this line for smooth animation */
+}
+/* The side navigation menu */
+.tray {
+  height: 95%;
+  width: 100%;
+  position: absolute;
+  z-index: 1;
+  top: -87%;
+  left: 0;
+  background-color: #222222;
+  overflow-x: hidden;
+  /* padding-top: 60px; */
+  transition: 0.5s;
+  transform: translateY(100%);
+  border-radius: 25px;
+}
+.tab {
+  position: absolute;
+  background: #222222;
+  height: 17%;
+  /* width: 25%; */
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 25%;
+  border-radius: 10px;
+}
+
+.cardImg {
+  height: 100px;
+}
+
+.battLevel {
+  background-color: #65fe08;
+  width: 8%;
+  height: 1.3vh;
+  padding: 1px;
+  margin-top: 10px;
+  margin-left: 10px;
+  position: absolute;
+  top: 7%;
+  left: -2%;
+}
+.batticon {
+  z-index: 1;
+}
+.badge {
+  width: 150px;
+  height: 30px;
+  border-radius: 15px;
+  border: 2px solid black;
+  background-color: rgb(255, 255, 255);
+  position: absolute;
+  top: -75px;
+  left: 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-image: url(https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png);
+  background-size: contain;
+}
+
+.circle-div {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background-color: rgb(255, 255, 255);
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -100%);
+  transition: all 1s;
+}
+
+.circle-div > * {
+  pointer-events: none;
+}
+
+.circle-div img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.tail-div {
+  width: 0px;
+  height: 0px;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top: 5px solid white;
+  position: absolute;
+  left: 50%;
+  top: -1px;
+  transform: translateX(-50%);
+}
+
+.info-box {
+  position: absolute;
+  background-color: rgb(65, 65, 65);
+  padding: 20px;
+  z-index: 100;
+  width: 100%;
+  height: 55%;
+  top: 12%;
+}
+
+.marker.active-marker .circle-div {
+  background-color: blue;
+  transform: translate(-50%, -100%) scale(1.1);
+}
+
+.marker.active-marker .tail-div {
+  border-top-color: blue;
+  transform: translateX(-50%) scale(1.1);
+  top: 2px;
+}
+
+.mapboxgl-ctrl-zoom-in::after {
+  content: "+";
+  font-size: 20px;
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translate(-50%, -20%);
+}
+
+.mapboxgl-ctrl-zoom-out::after {
+  content: "-";
+  font-size: 20px;
+  position: absolute;
+  bottom: 10%;
+  left: 50%;
+  transform: translate(-50%, -10%);
+}
+
+/* updated location content css code start on map */
+.location-popup-content {
+  padding: 15px 6px;
+  padding-top: 20px;
+  border-radius: 36px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  background-color: #07101d;
+}
+.location-popup-content .screen_icon_list {
+  display: flex;
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  column-gap: 6px;
+  align-items: center;
+}
+.location-popup-content .screen_icon_list img {
+}
+.location-popup-content .screen_icon_list p {
+  color: #fff;
+}
+.location-popup-content__img {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 80px;
+  height: 80px;
+  position: relative;
+}
+.location-popup-content__img img {
+  width: 100%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+.location-popup-content__text {
+  margin-left: 6px;
+}
+.location-popup-content__text p {
+  color: #ffffff;
+  font-size: 16px;
+  margin: 6px 0;
+}
+.location-popup-content__text p .span_bold {
+  font-weight: bold;
+}
+.location-popup-content__text p .span_normal {
+  opacity: 0.8;
+}
+/* updated location content css code end on map */
