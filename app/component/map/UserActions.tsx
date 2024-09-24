@@ -240,7 +240,7 @@ const UserActions = () => {
           startIcon={<LogoutIcon sx={{ fontSize: 50 }} />}
           onClick={() => {
             handleActiveButton("Logout");
-            signOut({ callbackUrl: "https://group-application.onrender.com/" });
+            signOut({ callbackUrl: "/" });
           }}
         >
           Logout

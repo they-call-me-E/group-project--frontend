@@ -85,20 +85,20 @@ const FencesManagement = ({
       .catch((error: any) => {});
   }, []);
 
-  if (fencesData?.length === 0) {
-    return (
-      <Grid
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <CircularProgress sx={{ color: Colors.red }} size={100} />
-      </Grid>
-    );
-  }
+  // if (fencesData?.length === 0) {
+  //   return (
+  //     <Grid
+  //       sx={{
+  //         display: "flex",
+  //         justifyContent: "center",
+  //         alignItems: "center",
+  //         height: "100vh",
+  //       }}
+  //     >
+  //       <CircularProgress sx={{ color: Colors.red }} size={100} />
+  //     </Grid>
+  //   );
+  // }
 
   return (
     <>
