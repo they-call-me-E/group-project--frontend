@@ -7,7 +7,8 @@ import Grid from "@mui/material/Grid2";
 import { useGroupSelectionContext } from "../../context/map/GroupSelectionContext";
 import { convertToDMS } from "./../../utils/convertToDMS";
 import { convertToMph } from "./../../utils/convertToMPH";
-
+import { handleUserInformation } from "./../../utils/api/userInformation";
+import { useSession } from "next-auth/react";
 // @ts-ignore
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
@@ -28,6 +29,7 @@ const Map = ({
   mapMain,
   setMapMain,
 }: MapProps) => {
+  const { data: session, status }: { data: any; status: string } = useSession();
   const [markersArray, setMarkersArray] = useState<any[]>([]);
   const { groupId, handleClick: groupIdHandleClick } =
     useGroupSelectionContext();
@@ -182,7 +184,13 @@ const Map = ({
         "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/battery.png";
     }
 
-    let popupContent = `<div class="location-popup-content">
+    let popupContent = `<div class="location-popup-content" style="${
+      member?.status?.device?.wifi ||
+      member?.status?.device?.battery_level ||
+      member?.status?.device?.charging
+        ? "padding:0px; padding-top:25px;" // Separate properties with a semicolon
+        : "padding:0 3px;"
+    }">
       ${
         member?.status
           ? `  <div class="screen_icon_list">
@@ -342,6 +350,10 @@ const Map = ({
        
       </div>
     </div>`;
+
+    // apply css code start
+
+    // apply css code end
     return popupContent;
   };
 
@@ -369,19 +381,18 @@ const Map = ({
     el.appendChild(circle);
     let badge = document.createElement("div");
     badge.className = "badge";
-    badge.style.width = membersData?.status?.speed ? "200px" : "80px";
     badge.style.borderRadius =
       membersData?.status?.speed !== 0 ? "15px" : "50%";
-    // @ts-ignore
-    badge.style.backgroundImage = `url(${badgeImageUrl})`;
+    let image = document.createElement("img");
+    image.src = badgeImageUrl;
+    let imageDiv = document.createElement("div");
+    imageDiv.style.width = "50px";
+    imageDiv.appendChild(image);
+    badge.appendChild(imageDiv);
 
     if (!membersData?.status?.speed) {
-      badge.style.backgroundPosition = "center";
+      imageDiv.style.marginLeft = "7px";
     }
-    // if (membersData?.fences) {
-    //   badge.style.backgroundPosition = "center";
-    //   badge.style.width = "80px";
-    // }
 
     if (membersData?.status?.speed !== 0) {
       let speedText = document.createElement("span");
@@ -389,7 +400,7 @@ const Map = ({
       speedText.textContent = membersData?.status?.speed
         ? membersData?.status?.speed +
           "km/h" +
-          " " +
+          "" +
           "(" +
           convertToMph(membersData?.status?.speed) +
           "mph" +
@@ -531,12 +542,35 @@ const Map = ({
         membersWithPlacesData?.push(...usersData);
       }
 
-      removePreviousMarkers();
-      membersWithPlacesData.forEach(function (item) {
-        addMemberWithPlace(item, mapMain);
-      });
+      if (session && userList?.length === 0) {
+        // get user data if userList array length is 0 code start
+        handleUserInformation(session?.user?.token, session?.user?.id)
+          .then((res: any) => {
+            membersWithPlacesData?.push({
+              id: res?.data?.user?.uuid,
+              name: res?.data?.user?.name,
+              location: res?.data?.user?.location,
+              status: res?.data?.user?.status,
+              avatar:
+                "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/pngimg.com%20-%20deadpool_PNG15.png",
+              badgeImageUrl:
+                "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png",
+            });
+            removePreviousMarkers();
+            membersWithPlacesData.forEach(function (item) {
+              addMemberWithPlace(item, mapMain);
+            });
+          })
+          .catch((err) => {});
+        // get user data if userList array length is 0 code end
+      } else {
+        removePreviousMarkers();
+        membersWithPlacesData.forEach(function (item) {
+          addMemberWithPlace(item, mapMain);
+        });
+      }
     }
-  }, [groupId, locationWithStatusSuccess]);
+  }, [groupId, locationWithStatusSuccess, mapMain]);
 
   return (
     <>

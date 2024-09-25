@@ -18,13 +18,17 @@ const PlacesMenu = () => {
     open: placesMenuListModalOpen,
     handleClick: placesMenuListHandleClick,
   } = usePlacesMenuListOpenContext();
-  const { open: userActionModalOpen, handleHide: userActionHandleHide } =
-    useUserActionOpenContext();
+  const {
+    open: userActionModalOpen,
+    handleHide: userActionHandleHide,
+    userProfileModalHide,
+  } = useUserActionOpenContext();
 
   const handlePlaceMenuList = () => {
     placesMenuListHandleClick();
     usersMenuListHandleHide();
     userActionHandleHide();
+    userProfileModalHide();
   };
 
   return (

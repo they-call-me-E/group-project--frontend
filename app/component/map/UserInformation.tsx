@@ -9,6 +9,10 @@ import { useUserActionOpenContext } from "../../context/map/UserActionContext";
 import { useUsersMenuListOpenContext } from "../../context/map/UsersMenuListContext";
 import { usePlacesMenuListOpenContext } from "../../context/map/PlacesMenuListContext";
 import UserActions from "./UserActions";
+import { Button } from "@mui/material";
+import CloseIcon from "@mui/icons-material/Close";
+import { FaRegEdit } from "react-icons/fa";
+import { useState } from "react";
 
 const UserInformation = ({
   userInformationData,
@@ -16,11 +20,24 @@ const UserInformation = ({
   userInformationData: any;
 }) => {
   const {
+    handleHide: userActionHandleHide,
+    handleClick: userActionHandleClick,
+    editProfleModalFormOpen,
+    createGroupModalFormHide,
+    handleGroupsModalHide,
+    locationWithStatusModalFormHide,
+    handleJoinGroupModalHide,
+    open: userActionModalOpen,
+    userProfileModalClick,
+    profileModal,
+    userProfileModalHide,
+  } = useUserActionOpenContext();
+  const [activeButton, setActiveButton] = useState<string>();
+  const {
     open: placesMenuListModalOpen,
     handleHide: placesMenuListHandleHide,
   } = usePlacesMenuListOpenContext();
-  const { open: userActionModalOpen, handleClick: userActionHandleClick } =
-    useUserActionOpenContext();
+
   const { open: usersMenuListModalOpen, handleHide: usersMenuListHandleHide } =
     useUsersMenuListOpenContext();
   const { data: session, status } = useSession();
@@ -29,6 +46,93 @@ const UserInformation = ({
     placesMenuListHandleHide();
     userActionHandleClick();
     usersMenuListHandleHide();
+    userProfileModalHide();
+  };
+
+  const handleActiveButton = (value: string) => {
+    setActiveButton(value);
+  };
+
+  const userProfileModal = () => {
+    return (
+      <Grid sx={{ position: "relative" }}>
+        {" "}
+        <Grid
+          sx={{
+            backgroundColor: Colors.blue,
+            position: "absolute",
+            bottom: "2px",
+            left: "0",
+            width: "170px",
+            minHeight: "40px",
+            borderTopLeftRadius: "6px",
+            borderTopRightRadius: "6px",
+            padding: "3px 0",
+          }}
+        >
+          <CloseIcon
+            onClick={userProfileModalClick}
+            sx={{
+              zIndex: 10,
+              cursor: "pointer",
+              color: Colors.red,
+              fontSize: "16px",
+              position: "absolute",
+              right: "5px",
+              top: "5px",
+              backgroundColor: "transparent",
+              borderRadius: "50px",
+              "&:hover": {
+                backgroundColor: "transparent",
+              },
+            }}
+          />
+
+          <Grid
+            sx={{
+              marginTop: "18px",
+              padding: "0 10px",
+              display: "flex",
+              flexDirection: "column",
+              columnGap: "6px",
+              rowGap: "2px",
+            }}
+          >
+            <Button
+              sx={{
+                width: "100%",
+                display: "flex",
+                justifyContent: "start",
+                alignItems: "center",
+                textTransform: "capitalize",
+                boxShadow: "0",
+                backgroundColor:
+                  activeButton === "Edit Profile"
+                    ? Colors.activeBlue
+                    : "transparent",
+                "&:hover": {
+                  backgroundColor: Colors.lightBlue,
+                  boxShadow: "0",
+                },
+              }}
+              variant="contained"
+              startIcon={<FaRegEdit className="text-[50px]" />}
+              onClick={() => {
+                handleActiveButton("Edit Profile");
+                editProfleModalFormOpen();
+                createGroupModalFormHide();
+                handleGroupsModalHide();
+                locationWithStatusModalFormHide();
+                handleJoinGroupModalHide();
+                userActionHandleHide();
+              }}
+            >
+              Edit Profile
+            </Button>
+          </Grid>
+        </Grid>
+      </Grid>
+    );
   };
 
   return (
@@ -40,6 +144,9 @@ const UserInformation = ({
             <UserActions />
           </Grid>
         )}
+        {/*  userProfileModal  open code start */}
+        {profileModal && userProfileModal()}
+        {/*  userProfileModal  open code end */}
 
         {/* Sign in information */}
         <Grid
@@ -52,23 +159,35 @@ const UserInformation = ({
           <Grid
             sx={{ display: "flex", columnGap: "6px", alignItems: "center" }}
           >
-            {userInformationData?.avatar ? (
-              <Image
-                src={`${process.env.NEXT_PUBLIC_IMAGE_API_URL}/img/users/${userInformationData?.avatar}`}
-                width={36}
-                height={36}
-                alt="User Icon"
-                className="w-[48px] h-[48px] object-contain cursor-pointer rounded-[12px]"
-              />
-            ) : (
-              <Image
-                src={DefaultUser}
-                width={36}
-                height={36}
-                alt="User Icon"
-                className="w-[48px] h-[48px] object-contain cursor-pointer"
-              />
-            )}
+            <Button
+              onClick={() => {
+                placesMenuListHandleHide();
+                userActionHandleHide();
+                usersMenuListHandleHide();
+                userProfileModalClick();
+              }}
+              variant="contained"
+              className="cursor-pointer"
+              sx={{ backgroundColor: "transparent", padding: 0, minWidth: 0 }}
+            >
+              {userInformationData?.avatar ? (
+                <Image
+                  src={`${process.env.NEXT_PUBLIC_IMAGE_API_URL}/img/users/${userInformationData?.avatar}`}
+                  width={36}
+                  height={36}
+                  alt="User Icon"
+                  className="w-[48px] h-[48px] object-contain cursor-pointer rounded-[12px]"
+                />
+              ) : (
+                <Image
+                  src={DefaultUser}
+                  width={36}
+                  height={36}
+                  alt="User Icon"
+                  className="w-[48px] h-[48px] object-contain cursor-pointer"
+                />
+              )}
+            </Button>
 
             <Typography
               variant="body1"

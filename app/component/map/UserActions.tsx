@@ -14,16 +14,13 @@ import { useState } from "react";
 const UserActions = () => {
   const {
     handleClick: userActionHandleClick,
-    editProfleModalFormOpen,
     editProfleModalFormHide,
     createGroupModalFormOpen,
     createGroupModalFormHide,
-    groupsModal,
     handleGroupsModalOpen,
     handleGroupsModalHide,
     locationWithStatusModalFormOpen,
     locationWithStatusModalFormHide,
-    handleJoinGroupsModalOpen,
     handleJoinGroupModalOpen,
     handleJoinGroupModalHide,
   } = useUserActionOpenContext();
@@ -73,7 +70,7 @@ const UserActions = () => {
           rowGap: "2px",
         }}
       >
-        <Button
+        {/* <Button
           sx={{
             width: "100%",
             display: "flex",
@@ -102,7 +99,7 @@ const UserActions = () => {
           }}
         >
           Edit Profile
-        </Button>
+        </Button> */}
         <Button
           sx={{
             width: "100%",

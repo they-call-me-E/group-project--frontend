@@ -48,7 +48,7 @@ const PlacesMenuList = ({
         borderTopRightRadius: "6px",
         marginTop: "3px",
         overflowY: "auto",
-        padding: "10px",
+        padding: "0 10px",
         // Hide scrollbar for WebKit browsers (Chrome, Safari)
         "&::-webkit-scrollbar": {
           display: "none",
@@ -59,7 +59,7 @@ const PlacesMenuList = ({
         msOverflowStyle: "none",
       }}
     >
-      <CloseIcon
+      {/* <CloseIcon
         onClick={placesMenuListHandleClick}
         sx={{
           zIndex: 10,
@@ -75,8 +75,8 @@ const PlacesMenuList = ({
             backgroundColor: "transparent",
           },
         }}
-      />
-      <List>
+      /> */}
+      <List sx={{ padding: 0 }}>
         <Grid sx={{ marginBottom: "6px" }}></Grid>
         {placesList.map((place, index) => (
           <ListItem
@@ -107,8 +107,8 @@ const PlacesMenuList = ({
               columnGap: "8px",
               alignItems: "center",
               position: "relative",
-              paddingTop: "30px",
-              paddingBottom: "10px",
+              paddingTop: "5px",
+              paddingBottom: "5px",
               paddingLeft: "3px",
               paddingRight: "3px",
               marginBottom: "3px",

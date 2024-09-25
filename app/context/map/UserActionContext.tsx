@@ -17,9 +17,16 @@ export function UserActionOpenWrapper({
   const [createGroupModalForm, setCreateGroupModalForm] = useState(false);
   const [groupsModal, setGroupsModal] = useState(false);
   const [joinGroupModal, setJoinGroupModal] = useState(false);
+  const [profileModal, setProfileModal] = useState(false);
 
   const handleClick = () => {
     setState(!state);
+  };
+  const userProfileModalClick = () => {
+    setProfileModal(!profileModal);
+  };
+  const userProfileModalHide = () => {
+    setProfileModal(false);
   };
   const editProfleModalFormOpen = () => {
     setEditProfileModalForm(!editProfileModalForm);
@@ -78,6 +85,9 @@ export function UserActionOpenWrapper({
         joinGroupModal: joinGroupModal,
         handleJoinGroupModalOpen: handleJoinGroupModalOpen,
         handleJoinGroupModalHide: handleJoinGroupModalHide,
+        userProfileModalClick: userProfileModalClick,
+        userProfileModalHide: userProfileModalHide,
+        profileModal: profileModal,
       }}
     >
       {children}

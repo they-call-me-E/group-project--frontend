@@ -33,8 +33,12 @@ const GroupSelection = ({
     useGroupSelectionContext();
   const { open: usersMenuListModalOpen, handleHide: usersMenuListHandleHide } =
     useUsersMenuListOpenContext();
-  const { open: userActionModalOpen, handleHide: userActionHandleHide } =
-    useUserActionOpenContext();
+  const {
+    open: userActionModalOpen,
+    handleHide: userActionHandleHide,
+    userProfileModalHide,
+    profileModal,
+  } = useUserActionOpenContext();
   const {
     open: placesMenuListModalOpen,
     handleHide: placesMenuListHandleHide,
@@ -136,6 +140,10 @@ const GroupSelection = ({
               key={i}
               value={item?.uuid}
               onFocus={() => {
+                if (profileModal === true) {
+                  userProfileModalHide();
+                }
+
                 if (usersMenuListModalOpen === true) {
                   usersMenuListHandleHide();
                 }

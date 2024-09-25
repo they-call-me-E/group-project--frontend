@@ -54,7 +54,7 @@ const UsersMenuList = ({
         borderTopRightRadius: "6px",
         marginTop: "3px",
         overflowY: "auto",
-        padding: "10px",
+        padding: "0 10px",
         // Hide scrollbar for WebKit browsers (Chrome, Safari)
         "&::-webkit-scrollbar": {
           display: "none",
@@ -65,7 +65,7 @@ const UsersMenuList = ({
         msOverflowStyle: "none",
       }}
     >
-      <CloseIcon
+      {/* <CloseIcon
         onClick={usersMenuListHandleClick}
         sx={{
           zIndex: 10,
@@ -81,8 +81,8 @@ const UsersMenuList = ({
             backgroundColor: "transparent",
           },
         }}
-      />
-      <List>
+      /> */}
+      <List sx={{ padding: 0 }}>
         <Grid sx={{ marginBottom: "6px" }}></Grid>
         {userList.map((user, index) => {
           if (user?.uuid === userInformationData?.uuid) {
@@ -110,8 +110,13 @@ const UsersMenuList = ({
                 columnGap: "6px",
                 alignItems: "center",
                 position: "relative",
-                paddingTop: "30px",
-                paddingBottom: "10px",
+                paddingTop:
+                  !user?.status?.device?.wifi ||
+                  !user?.status?.device?.battery_level ||
+                  !user?.status?.device?.charging
+                    ? "5px"
+                    : "22px",
+                paddingBottom: "5px",
                 paddingLeft: "3px",
                 paddingRight: "3px",
                 marginBottom: "3px",

@@ -28,6 +28,7 @@
   border-radius: 36px;
   box-shadow: 0 3px 14px rgba(0, 0, 0, 0.4);
   width: 430px;
+  padding: 0;
 }
 
 .mapboxgl-popup-close-button {
@@ -99,11 +100,8 @@
 
 .content {
   color: black;
-  /* Set text color to black */
   font-size: 16px;
-  /* Set font size */
   line-height: 1.5;
-  /* Set line height for better readability */
 }
 
 .badge {
@@ -112,41 +110,24 @@
   border-radius: 50%;
   border: 2px solid black;
   background-color: #ffffff;
-  /* position: absolute; */
   position: relative;
   width: 100%;
   top: -75px;
   left: 0px;
   display: flex;
-  justify-content: center;
   align-items: center;
-  background-image: url("https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png");
-  background-size: contain;
-  background-repeat: no-repeat;
-  /* Prevent tiling */
-  background-position: center;
-  /* Center the image */
-  background-position: left center;
-  /* Position image on the left */
   justify-content: space-between;
 }
 
 .badge-text {
   margin-right: 5px;
-  /* Add some space between the image and the text */
   font-size: 12px;
-  /* Adjust font size as needed */
   font-family: Helvetica;
   color: black;
-  /* Set the text color to black */
   font-weight: 900;
-  position: absolute;
-  top: 25%;
-  right: 0;
   margin-left: 5px;
 }
 .traycontainer {
-  /* background: white; */
   position: absolute;
   height: 40%;
   width: 100%;
@@ -203,7 +184,8 @@
   z-index: 1;
 }
 .badge {
-  width: 150px;
+  /* width: 150px; */
+  width: fit-content;
   height: 30px;
   border-radius: 15px;
   border: 2px solid black;
@@ -212,10 +194,10 @@
   top: -75px;
   left: 0px;
   display: flex;
-  justify-content: center;
+  /* justify-content: center; */
   align-items: center;
-  background-image: url(https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png);
-  background-size: contain;
+  /* background-image: url(https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png);
+  background-size: contain; */
 }
 
 .circle-div {
@@ -293,8 +275,6 @@
 
 /* updated location content css code start on map */
 .location-popup-content {
-  padding: 15px 6px;
-  padding-top: 20px;
   border-radius: 36px;
   cursor: pointer;
   display: flex;

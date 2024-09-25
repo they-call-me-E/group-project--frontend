@@ -20,13 +20,17 @@ const UsersMenu = () => {
     open: usersMenuListModalOpen,
     handleClick: usersMenuListHandleClick,
   } = useUsersMenuListOpenContext();
-  const { open: userActionModalOpen, handleHide: userActionHandleHide } =
-    useUserActionOpenContext();
+  const {
+    open: userActionModalOpen,
+    handleHide: userActionHandleHide,
+    userProfileModalHide,
+  } = useUserActionOpenContext();
 
   const handleUserMenuList = () => {
     placesMenuListHandleHide();
     usersMenuListHandleClick();
     userActionHandleHide();
+    userProfileModalHide();
   };
 
   return (
