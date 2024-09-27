@@ -317,7 +317,8 @@ const Map = ({
     setMarkersArray((prevMarkers) => [...prevMarkers, marker]);
     return marker;
   };
-  const addPlaces = (placesData: any, mapInstance: any) => {
+
+  const addPlaces = (placesData: any, mapInstance: mapboxgl.Map) => {
     let { latitude, longitude } = placesData?.location;
 
     const sourceId = `circle-${latitude}-${longitude}`;
@@ -345,11 +346,22 @@ const Map = ({
 
       // Add a circle layer
       mapInstance.addLayer({
-        id: layerId,
+        id: `circle-layer-${latitude}-${longitude}`,
         type: "circle",
-        source: sourceId,
+        source: `circle-${latitude}-${longitude}`,
         paint: {
-          "circle-radius": 90,
+        
+          "circle-radius": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            5,
+            30, 
+            10,
+            80, 
+            15,
+            120, 
+          ],
           "circle-color": Colors.blue,
           "circle-opacity": 0.2,
         },
@@ -363,7 +375,7 @@ const Map = ({
       });
     }
 
-    // Create the marker element
+    // Create the marker element with a custom SVG icon
     const markerElement = document.createElement("div");
     markerElement.innerHTML = `
       <div class="places_icon_parent">
@@ -388,13 +400,13 @@ const Map = ({
       </div>
     `;
 
+    // Create and place the marker on the map
     let marker = new mapboxgl.Marker(markerElement);
     if (longitude && latitude) {
       marker.setLngLat([longitude, latitude]).addTo(mapInstance);
     }
 
-    // Update markers array
-    setMarkersArray((prevMarkers) => [...prevMarkers, marker]);
+    // Return the marker for later reference
     return marker;
   };
 
@@ -464,6 +476,12 @@ const Map = ({
                 "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/pngimg.com%20-%20deadpool_PNG15.png",
               badgeImageUrl:
                 "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png",
+            });
+
+            removePreviousMarkers();
+
+            membersData.forEach(function (item) {
+              addMember(item, mapMain);
             });
           })
           .catch((err) => {});
