@@ -9,6 +9,8 @@ import { convertToDMS } from "./../../utils/convertToDMS";
 import { convertToMph } from "./../../utils/convertToMPH";
 import { handleUserInformation } from "./../../utils/api/userInformation";
 import { useSession } from "next-auth/react";
+import ReactMapGL, { Source, Layer, Marker } from "react-map-gl";
+import { Colors } from "../../theme/colors";
 // @ts-ignore
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
@@ -35,144 +37,11 @@ const Map = ({
     useGroupSelectionContext();
   let activeMarker: any;
 
-  let geodataArray = [
-    {
-      center: [-81.96075, 35.07042],
-      radiusInFeet: 230,
-      geofenceId: "geofence1",
-      pinImageUrl:
-        "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/geo-pin.png",
-    },
-    {
-      center: [-81.95, 35.08],
-      radiusInFeet: 150,
-      geofenceId: "geofence2",
-      pinImageUrl: "",
-    },
-  ];
-
   // image list
   const badgeImageUrl =
     "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png";
 
   // map related function code start
-  const addHexagon = (
-    lat: any,
-    lon: any,
-    sizeInMeters: any,
-    hexagonId: any,
-    borderColor: any,
-    borderWidth: any,
-    mapInstance: any
-  ) => {
-    let coordinates = [];
-    let angleDeg, angleRad, x, y;
-    let latDelta = sizeInMeters / 111320;
-
-    for (let i = 0; i < 6; i++) {
-      angleDeg = 60 * i + 90;
-      angleRad = (angleDeg * Math.PI) / 180;
-      x = lon + latDelta * Math.cos(angleRad);
-      y = lat + latDelta * Math.sin(angleRad);
-      coordinates.push([x, y]);
-    }
-
-    coordinates.push(coordinates[0]);
-    mapInstance.addLayer({
-      id: hexagonId + "-fill",
-      type: "fill",
-      source: {
-        type: "geojson",
-        // @ts-ignore
-        data: {
-          type: "Feature",
-          geometry: {
-            type: "Polygon",
-            coordinates: [coordinates],
-          },
-        },
-      },
-      layout: {},
-      paint: {
-        "fill-color": "#007cbf",
-        "fill-opacity": 0.5,
-      },
-    });
-
-    mapInstance.addLayer({
-      id: hexagonId + "-line",
-      type: "line",
-      source: {
-        type: "geojson",
-        // @ts-ignore
-        data: {
-          type: "Feature",
-          geometry: {
-            type: "Polygon",
-            coordinates: [coordinates],
-          },
-        },
-      },
-      layout: {},
-      paint: {
-        "line-color": borderColor,
-        "line-width": borderWidth,
-      },
-    });
-  };
-
-  const addGeofence = (geodata: any, mapInstance: any) => {
-    let center = geodata.center;
-    let radiusInMeters = 200;
-    let options = { steps: 64, units: "meters" };
-    // @ts-ignore
-    let circle = turf.circle(center, radiusInMeters, options);
-
-    mapInstance.addLayer({
-      id: geodata.geofenceId,
-      type: "fill",
-      source: {
-        type: "geojson",
-        data: circle,
-      },
-      paint: {
-        "fill-color": "#007cbf",
-        "fill-opacity": 0.25,
-      },
-    });
-
-    const defaultMarker = new mapboxgl.Marker({
-      anchor: "bottom",
-      offset: [0, 24],
-    });
-
-    defaultMarker.setLngLat(geodata.center).addTo(mapInstance);
-    mapInstance.addLayer({
-      id: geodata.geofenceId + "-circle",
-      type: "circle",
-      source: {
-        type: "geojson",
-        // @ts-ignore
-        data: {
-          type: "Feature",
-          geometry: {
-            type: "Point",
-            coordinates: geodata.center,
-          },
-        },
-      },
-      paint: {
-        "circle-radius": 22,
-        "circle-color": "#FFFFFF",
-        "circle-opacity": 1,
-      },
-    });
-  };
-  const addMultipleGeofences = (geodataArray: any, mapInstance: any) => {
-    geodataArray.forEach(function (geodata: any) {
-      addGeofence(geodata, mapInstance);
-    });
-  };
 
   const getPopupContent = (member: any) => {
     let batteryIcon;
@@ -188,7 +57,7 @@ const Map = ({
       member?.status?.device?.wifi ||
       member?.status?.device?.battery_level ||
       member?.status?.device?.charging
-        ? "padding:0px; padding-top:25px;" // Separate properties with a semicolon
+        ? "padding:0px; padding-top:25px;"
         : "padding:0 3px;"
     }">
       ${
@@ -351,9 +220,6 @@ const Map = ({
       </div>
     </div>`;
 
-    // apply css code start
-
-    // apply css code end
     return popupContent;
   };
 
@@ -362,7 +228,7 @@ const Map = ({
     markersArray.forEach((marker) => marker.remove());
     setMarkersArray([]);
   };
-  const addMemberWithPlace = (membersData: any, mapInstance: any) => {
+  const addMember = (membersData: any, mapInstance: any) => {
     let el = document.createElement("div");
     el.className = "marker " + membersData.id;
     let circle = document.createElement("div");
@@ -451,6 +317,87 @@ const Map = ({
     setMarkersArray((prevMarkers) => [...prevMarkers, marker]);
     return marker;
   };
+  const addPlaces = (placesData: any, mapInstance: any) => {
+    let { latitude, longitude } = placesData?.location;
+
+    const sourceId = `circle-${latitude}-${longitude}`;
+    const layerId = `circle-layer-${latitude}-${longitude}`;
+
+    // Create a circle marker
+    const circleMarker: any = {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [longitude, latitude],
+      },
+    };
+
+    // Check if the source already exists
+    if (!mapInstance.getSource(sourceId)) {
+      // Add source for the circle
+      mapInstance.addSource(sourceId, {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [circleMarker],
+        },
+      });
+
+      // Add a circle layer
+      mapInstance.addLayer({
+        id: layerId,
+        type: "circle",
+        source: sourceId,
+        paint: {
+          "circle-radius": 90,
+          "circle-color": Colors.blue,
+          "circle-opacity": 0.2,
+        },
+      });
+    } else {
+      // Update the existing source if necessary
+      const source = mapInstance.getSource(sourceId) as mapboxgl.GeoJSONSource;
+      source.setData({
+        type: "FeatureCollection",
+        features: [circleMarker],
+      });
+    }
+
+    // Create the marker element
+    const markerElement = document.createElement("div");
+    markerElement.innerHTML = `
+      <div class="places_icon_parent">
+           <svg display="block" height="41px" width="27px" viewBox="0 0 27 41">
+          <g fillRule="nonzero">
+              <g transform="translate(3.0, 29.0)" fill="#000000">
+                  <ellipse opacity="0.04" cx="10.5" cy="5.80029008" rx="10.5" ry="5.25002273"></ellipse>
+              </g>
+              <g fill="#3FB1CE">
+                  <path d="M27,13.5 C27,19.074644 20.250001,27.000002 14.75,34.500002 C14.016665,35.500004 12.983335,35.500004 12.25,34.500002 C6.7499993,27.000002 0,19.222562 0,13.5 C0,6.0441559 6.0441559,0 13.5,0 C20.955844,0 27,6.0441559 27,13.5 Z"></path>
+              </g>
+              <g opacity="0.25" fill="#000000">
+                  <path d="M13.5,0 C6.0441559,0 0,6.0441559 0,13.5 C0,19.222562 6.7499993,27 12.25,34.5 C13,35.522727 14.016664,35.500004 14.75,34.5 C20.250001,27 27,19.074644 27,13.5 C27,6.0441559 20.955844,0 13.5,0 Z"></path>
+              </g>
+              <g transform="translate(6.0, 7.0)" fill="#FFFFFF"></g>
+              <g transform="translate(8.0, 8.0)">
+                  <circle fill="#000000" opacity="0.25" cx="5.5" cy="5.5" r="5.4999962"></circle>
+                  <circle fill="#FFFFFF" cx="5.5" cy="5.5" r="5.4999962"></circle>
+              </g>
+          </g>
+      </svg>
+      </div>
+    `;
+
+    let marker = new mapboxgl.Marker(markerElement);
+    if (longitude && latitude) {
+      marker.setLngLat([longitude, latitude]).addTo(mapInstance);
+    }
+
+    // Update markers array
+    setMarkersArray((prevMarkers) => [...prevMarkers, marker]);
+    return marker;
+  };
+
   // map related function code end
 
   useEffect(() => {
@@ -469,26 +416,7 @@ const Map = ({
 
       mapInstance.addControl(navigationControl, "top-right");
 
-      mapInstance.on("load", () => {
-        // @ts-ignore
-        addMultipleGeofences(geodataArray, mapInstance);
-
-        const lat = 35.07042;
-        const lon = -81.96075;
-        const sizeInMeters = 260;
-        const hexagonId = "myHexagon";
-        const fillColor = "orange";
-        const fillOpacity = 0.75;
-        addHexagon(
-          lat,
-          lon,
-          sizeInMeters,
-          hexagonId,
-          fillColor,
-          fillOpacity,
-          mapInstance
-        );
-      });
+      mapInstance.on("load", () => {});
       setMapMain(mapInstance);
       return () => {
         mapInstance.remove();
@@ -498,9 +426,10 @@ const Map = ({
 
   useEffect(() => {
     if (mapMain) {
-      let membersWithPlacesData: any[] = [];
+      let membersData: any[] = [];
+      const placesData: any[] = [];
+      // placesData
       if (placesList?.length > 0) {
-        const placesData: any[] = [];
         placesList?.forEach((place) => {
           if (place?.latitude && place?.longitude) {
             placesData.push({
@@ -519,14 +448,30 @@ const Map = ({
             });
           }
         });
-
-        membersWithPlacesData?.push(...placesData);
       }
-      if (userList?.length > 0) {
-        const usersData: any[] = [];
+
+      //  membersData code
+      if (session && userList?.length === 0) {
+        // get user data if userList array length is 0 code start
+        handleUserInformation(session?.user?.token, session?.user?.id)
+          .then((res: any) => {
+            membersData?.push({
+              id: res?.data?.user?.uuid,
+              name: res?.data?.user?.name,
+              location: res?.data?.user?.location,
+              status: res?.data?.user?.status,
+              avatar:
+                "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/pngimg.com%20-%20deadpool_PNG15.png",
+              badgeImageUrl:
+                "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png",
+            });
+          })
+          .catch((err) => {});
+        // get user data if userList array length is 0 code end
+      } else if (userList?.length > 0) {
         userList?.forEach((user) => {
           if (Object.keys(user?.location).length !== 0) {
-            usersData.push({
+            membersData.push({
               id: user?.uuid,
               name: user?.name,
               location: user?.location,
@@ -538,37 +483,15 @@ const Map = ({
             });
           }
         });
-
-        membersWithPlacesData?.push(...usersData);
       }
 
-      if (session && userList?.length === 0) {
-        // get user data if userList array length is 0 code start
-        handleUserInformation(session?.user?.token, session?.user?.id)
-          .then((res: any) => {
-            membersWithPlacesData?.push({
-              id: res?.data?.user?.uuid,
-              name: res?.data?.user?.name,
-              location: res?.data?.user?.location,
-              status: res?.data?.user?.status,
-              avatar:
-                "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/pngimg.com%20-%20deadpool_PNG15.png",
-              badgeImageUrl:
-                "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png",
-            });
-            removePreviousMarkers();
-            membersWithPlacesData.forEach(function (item) {
-              addMemberWithPlace(item, mapMain);
-            });
-          })
-          .catch((err) => {});
-        // get user data if userList array length is 0 code end
-      } else {
-        removePreviousMarkers();
-        membersWithPlacesData.forEach(function (item) {
-          addMemberWithPlace(item, mapMain);
-        });
-      }
+      removePreviousMarkers();
+      placesData.forEach(function (item) {
+        addPlaces(item, mapMain);
+      });
+      membersData.forEach(function (item) {
+        addMember(item, mapMain);
+      });
     }
   }, [groupId, locationWithStatusSuccess, mapMain]);
 

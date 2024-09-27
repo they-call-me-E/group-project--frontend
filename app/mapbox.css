@@ -323,4 +323,17 @@
 .location-popup-content__text p .span_normal {
   opacity: 0.8;
 }
+.places_icon_parent {
+  width: 45px;
+  height: 45px;
+  background-color: #fff;
+  border-radius: 50%;
+  position: relative;
+}
+.places_icon_parent svg {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
 /* updated location content css code end on map */

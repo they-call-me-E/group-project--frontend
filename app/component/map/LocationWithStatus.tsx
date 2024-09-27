@@ -228,7 +228,7 @@ const LocationWithStatus = ({
             ? "translate(0, -50%)"
             : "translate(-50%, -50%)",
           backgroundColor: Colors.black,
-          width: "700px",
+          width: "400px",
           padding: "20px 20px",
           borderRadius: "8px",
           maxHeight: "100vh",
@@ -271,8 +271,8 @@ const LocationWithStatus = ({
           Location/Status
         </Typography>
         <form onSubmit={formik.handleSubmit}>
-          <Grid sx={{ display: "flex", columnGap: "20px" }}>
-            <Grid sx={{ flexBasis: "42%", flexGrow: 1 }}>
+          <Grid>
+            <Grid>
               {/* Latitude */}
               <Box mb={2}>
                 <Typography
@@ -476,8 +476,8 @@ const LocationWithStatus = ({
                 />
               </Box>
             </Grid>
-            <Grid sx={{ flexBasis: "42%", flexGrow: 1 }}>
-              {/* Location Sharing */}
+            {/* <Grid sx={{ flexBasis: "42%", flexGrow: 1 }}>
+            
               <Box mb={2}>
                 <FormControlLabel
                   control={
@@ -498,7 +498,7 @@ const LocationWithStatus = ({
                   }}
                 />
               </Box>
-              {/* isMoving */}
+            
               <Box mb={2}>
                 <FormControlLabel
                   control={
@@ -519,7 +519,7 @@ const LocationWithStatus = ({
                   }}
                 />
               </Box>
-              {/*  Screen */}
+            
               <Box mb={2}>
                 <FormControlLabel
                   control={
@@ -540,7 +540,7 @@ const LocationWithStatus = ({
                   }}
                 />
               </Box>
-              {/*   Wifi */}
+           
               <Box mb={2}>
                 <FormControlLabel
                   control={
@@ -561,7 +561,7 @@ const LocationWithStatus = ({
                   }}
                 />
               </Box>
-              {/*    Charging */}
+           
               <Box mb={2}>
                 <FormControlLabel
                   control={
@@ -582,7 +582,7 @@ const LocationWithStatus = ({
                   }}
                 />
               </Box>
-            </Grid>
+            </Grid> */}
           </Grid>
           <Button
             disabled={loading}
