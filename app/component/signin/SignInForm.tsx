@@ -15,7 +15,11 @@ interface FormValues {
   password: string;
 }
 
-const SignInForm = () => {
+const SignInForm = ({
+  setForgotPasswordModal,
+}: {
+  setForgotPasswordModal: React.Dispatch<React.SetStateAction<any>>;
+}) => {
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
@@ -170,6 +174,26 @@ const SignInForm = () => {
               }}
             />
           </Box>
+
+          <Button
+            onClick={() => setForgotPasswordModal(true)}
+            type="button"
+            variant="contained"
+            sx={{
+              backgroundColor: "transparent",
+              "&:hover": {
+                backgroundColor: "transparent",
+              },
+              textTransform: "none",
+              color: Colors.white,
+              opacity: 0.8,
+              justifyContent: "end",
+              marginBottom: "8px",
+            }}
+            fullWidth
+          >
+            Forgot password?
+          </Button>
 
           <Button
             disabled={loading}

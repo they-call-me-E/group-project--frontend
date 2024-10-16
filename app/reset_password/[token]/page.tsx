@@ -1,19 +1,19 @@
 "use client";
-import SignInForm from "./component/signin/SignInForm";
-import useRedirectIfAuthenticated from "./hooks/useRedirectIfAuthenticated";
+import useRedirectIfAuthenticated from "./../../hooks/useRedirectIfAuthenticated";
 import Grid from "@mui/material/Grid2";
 import CircularProgress from "@mui/material/CircularProgress";
-import { Colors } from "./theme/colors";
-import ForgotPassword from "./component/forgotPassword/page";
+import { Colors } from "./../../theme/colors";
+import ResetPassword from "./../../component/ResetPassword/page";
+import { useParams } from "next/navigation";
 import { useState } from "react";
-import AlertMessage from "./component/message/AlertMessage";
+import AlertMessage from "../../component/message/AlertMessage";
 
 const Home = () => {
-  const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
-  const [resetPasswordModal, setResetPasswordModal] = useState(false);
-  const [checkErrorStatus, setCheckErrorStatus] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
+  const params = useParams();
+  const { token } = params;
   const { session, status } = useRedirectIfAuthenticated();
+  const [checkSuccessStatus, setCheckSuccessStatus] = useState(false);
+  const [checkErrorStatus, setCheckErrorStatus] = useState(false);
 
   if (status === "loading") {
     return (
@@ -45,20 +45,6 @@ const Home = () => {
     );
   }
 
-  const renderComponent = () => {
-    if (forgotPasswordModal) {
-      return (
-        <ForgotPassword
-          setForgotPasswordModal={setForgotPasswordModal}
-          setCheckErrorStatus={setCheckErrorStatus}
-          setErrorMsg={setErrorMsg}
-        />
-      );
-    } else {
-      return <SignInForm setForgotPasswordModal={setForgotPasswordModal} />;
-    }
-  };
-
   return (
     <>
       <Grid
@@ -68,11 +54,22 @@ const Home = () => {
           height: "100vh",
         }}
       >
-        {renderComponent()}
+        <ResetPassword
+          checkSuccessStatus={checkSuccessStatus}
+          token={token}
+          setCheckSuccessStatus={setCheckSuccessStatus}
+          setCheckErrorStatus={setCheckErrorStatus}
+        />
+        <AlertMessage
+          open={checkSuccessStatus}
+          onClose={() => setCheckSuccessStatus(false)}
+          message=" Your password has been successfully reset. You can now log in with your new password."
+          severity="success"
+        />
         <AlertMessage
           open={checkErrorStatus}
           onClose={() => setCheckErrorStatus(false)}
-          message={errorMsg}
+          message="Token is invalid or has expired."
           severity="error"
         />
       </Grid>
