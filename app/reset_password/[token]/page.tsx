@@ -1,19 +1,27 @@
 "use client";
-import useRedirectIfAuthenticated from "./../../hooks/useRedirectIfAuthenticated";
+import useRedirectIfAuthenticated from "../../hooks/useRedirectIfAuthenticated";
 import Grid from "@mui/material/Grid2";
 import CircularProgress from "@mui/material/CircularProgress";
-import { Colors } from "./../../theme/colors";
-import ResetPassword from "../../component/resetPassword/page";
+import { Colors } from "../../theme/colors";
+import ResetPasswordForm from "../../component/resetPassword/form";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import AlertMessage from "../../component/message/AlertMessage";
+import { useRouter } from "next/navigation";
 
-const Page = () => {
+const ResetPassword = () => {
+  const router = useRouter();
   const params = useParams();
   const { token } = params;
   const { session, status } = useRedirectIfAuthenticated();
   const [checkSuccessStatus, setCheckSuccessStatus] = useState(false);
   const [checkErrorStatus, setCheckErrorStatus] = useState(false);
+
+  useEffect(() => {
+    if (status === "authenticated") {
+      router.push("/map");
+    }
+  }, [status]);
 
   if (status === "loading") {
     return (
@@ -54,7 +62,7 @@ const Page = () => {
           height: "100vh",
         }}
       >
-        <ResetPassword
+        <ResetPasswordForm
           checkSuccessStatus={checkSuccessStatus}
           token={token}
           setCheckSuccessStatus={setCheckSuccessStatus}
@@ -76,4 +84,4 @@ const Page = () => {
     </>
   );
 };
-export default Page;
+export default ResetPassword;

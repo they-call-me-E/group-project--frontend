@@ -1,7 +1,7 @@
 "use client";
 
 import Grid from "@mui/material/Grid2";
-import { Colors } from "./../../theme/colors";
+import { Colors } from "../../theme/colors";
 import React, { useState } from "react";
 import axios from "axios";
 import { TextField, Box, Button, Typography } from "@mui/material";
@@ -14,14 +14,16 @@ interface FormValues {
   email: string;
 }
 
-const ForgotPassword = ({
+interface ForgotPasswordProps {
+  setCheckErrorStatus: (value: boolean) => void;
+  setForgotPasswordModal: (value: boolean) => void;
+  setErrorMsg: (value: string) => void;
+}
+
+const ForgotPassword: React.FC<ForgotPasswordProps> = ({
   setCheckErrorStatus,
   setForgotPasswordModal,
   setErrorMsg,
-}: {
-  setCheckErrorStatus: React.Dispatch<React.SetStateAction<any>>;
-  setForgotPasswordModal: React.Dispatch<React.SetStateAction<any>>;
-  setErrorMsg: React.Dispatch<React.SetStateAction<any>>;
 }) => {
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState(false);

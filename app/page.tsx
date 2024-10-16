@@ -4,13 +4,12 @@ import useRedirectIfAuthenticated from "./hooks/useRedirectIfAuthenticated";
 import Grid from "@mui/material/Grid2";
 import CircularProgress from "@mui/material/CircularProgress";
 import { Colors } from "./theme/colors";
-import ForgotPassword from "./component/forgotPassword/page";
+import ForgotPassword from "./component/forgotPassword/form";
 import { useState } from "react";
 import AlertMessage from "./component/message/AlertMessage";
 
 const Home = () => {
   const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
-  const [resetPasswordModal, setResetPasswordModal] = useState(false);
   const [checkErrorStatus, setCheckErrorStatus] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const { session, status } = useRedirectIfAuthenticated();

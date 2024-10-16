@@ -15,16 +15,18 @@ interface FormValues {
   passwordConfirm: string;
 }
 
-const ResetPassword = ({
-  checkSuccessStatus,
-  token,
-  setCheckSuccessStatus,
-  setCheckErrorStatus,
-}: {
+interface ResetPasswordFormProps {
   checkSuccessStatus: boolean;
   token: any;
   setCheckSuccessStatus: React.Dispatch<React.SetStateAction<any>>;
   setCheckErrorStatus: React.Dispatch<React.SetStateAction<any>>;
+}
+
+const ResetPasswordForm: React.FC<ResetPasswordFormProps> = ({
+  checkSuccessStatus,
+  token,
+  setCheckSuccessStatus,
+  setCheckErrorStatus,
 }) => {
   const [loading, setLoading] = useState(false);
   const [displaySignInButton, setDisplaySignInButton] = useState(false);
@@ -264,4 +266,4 @@ const ResetPassword = ({
   );
 };
 
-export default ResetPassword;
+export default ResetPasswordForm;
