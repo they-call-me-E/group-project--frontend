@@ -1,7 +1,7 @@
 "use client";
 
 import Grid from "@mui/material/Grid2";
-import { Colors } from "./../../theme/colors";
+import { Colors } from "../../theme/colors";
 import React, { useState } from "react";
 import axios from "axios";
 import { TextField, Box, Button, Typography } from "@mui/material";
@@ -21,7 +21,7 @@ const ResetPassword = ({
   setCheckSuccessStatus,
   setCheckErrorStatus,
 }: {
-  checkSuccessStatus: any;
+  checkSuccessStatus: boolean;
   token: any;
   setCheckSuccessStatus: React.Dispatch<React.SetStateAction<any>>;
   setCheckErrorStatus: React.Dispatch<React.SetStateAction<any>>;

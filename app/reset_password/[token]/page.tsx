@@ -3,12 +3,12 @@ import useRedirectIfAuthenticated from "./../../hooks/useRedirectIfAuthenticated
 import Grid from "@mui/material/Grid2";
 import CircularProgress from "@mui/material/CircularProgress";
 import { Colors } from "./../../theme/colors";
-import ResetPassword from "./../../component/ResetPassword/page";
+import ResetPassword from "../../component/resetPassword/page";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import AlertMessage from "../../component/message/AlertMessage";
 
-const Home = () => {
+const Page = () => {
   const params = useParams();
   const { token } = params;
   const { session, status } = useRedirectIfAuthenticated();
@@ -76,4 +76,4 @@ const Home = () => {
     </>
   );
 };
-export default Home;
+export default Page;
