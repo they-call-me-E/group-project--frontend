@@ -457,6 +457,7 @@ const GroupManagement = ({
                             onClick={() => {
                               setOpenViewGroupModal(true);
                               handleSingleGroupInformation(row?.uuid);
+                              setAlertModalOpen(false);
                             }}
                             variant="contained"
                             color="primary"

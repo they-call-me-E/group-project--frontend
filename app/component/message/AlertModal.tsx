@@ -21,7 +21,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
     <Grid
       sx={{
         position: "absolute",
-        zIndex: 1000,
+        zIndex: 1001,
         top: "10px",
         left: "50%",
         transform: "translate(-50%, 0)",
