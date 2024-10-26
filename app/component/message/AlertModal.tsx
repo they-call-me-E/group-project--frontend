@@ -25,7 +25,10 @@ const AlertModal: React.FC<AlertModalProps> = ({
         top: "10px",
         left: "50%",
         transform: "translate(-50%, 0)",
-        width: "400px",
+        width: {
+          xs: "90%",
+          sm: "400px",
+        },
         backgroundColor: Colors.white,
         padding: "20px",
       }}

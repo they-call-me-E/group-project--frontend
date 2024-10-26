@@ -283,7 +283,10 @@ export default function Home() {
             position: "fixed",
             top: 0,
             left: 0,
-            width: "350px",
+            width: {
+              xs: "70%",
+              sm: "350px",
+            },
             height: "100vh",
             backgroundColor: Colors.black,
             zIndex: 1000,
@@ -319,7 +322,15 @@ export default function Home() {
             <Grid
               className={` ${usersMenuListModalOpen ? "h-[300px]" : "h-auto"} `}
             >
-              <Grid className={`mt-4 flex gap-3 relative `}>
+              <Grid
+                className={`mt-4 flex gap-3 relative `}
+                sx={{
+                  flexDirection: {
+                    xs: "column",
+                    sm: "row",
+                  },
+                }}
+              >
                 <UsersMenu />
                 <PlacesMenu />
                 {usersMenuListModalOpen && (

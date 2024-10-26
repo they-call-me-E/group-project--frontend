@@ -29,6 +29,7 @@ const CreateGroup = ({
   const [loading, setLoading] = useState(false);
   const { createGroupModalFormHide, handleHide: userActionHandleHide } =
     useUserActionOpenContext();
+  const [mobileDeviceModal, setMobileDeviceModal] = useState(false);
 
   const formik = useFormik<FormValues>({
     initialValues: {
@@ -87,17 +88,45 @@ const CreateGroup = ({
           opacity: 0.4,
         }}
       ></Grid>
+      {/* Mobile device grid */}
+      <Grid
+        onClick={() => {
+          createGroupModalFormHide();
+          setMobileDeviceModal(true);
+        }}
+        sx={{
+          display: {
+            xs: mobileDeviceModal ? "none" : "block",
+            md: "none",
+          },
+          width: "100%",
+          height: "100vh",
+          backgroundColor: Colors.white,
+          opacity: 0.4,
+          position: "absolute",
+          zIndex: 1000,
+        }}
+      ></Grid>
       <Grid
         sx={{
           zIndex: 1000,
           position: "absolute",
           top: "50%",
-          left: moveCreateGroupForm ? "360px" : "50%",
-          transform: moveCreateGroupForm
-            ? "translate(0, -50%)"
-            : "translate(-50%, -50%)",
+          left: {
+            xs: "50%",
+            md: moveCreateGroupForm ? "360px" : "50%",
+          },
+          transform: {
+            xs: "translate(-50%, -50%)",
+            md: moveCreateGroupForm
+              ? "translate(0, -50%)"
+              : "translate(-50%, -50%)",
+          },
           backgroundColor: Colors.black,
-          width: "400px",
+          width: {
+            xs: "80%",
+            sm: "400px",
+          },
           padding: "20px 20px",
           borderRadius: "8px",
           maxHeight: "100vh",

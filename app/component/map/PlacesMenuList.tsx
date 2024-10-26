@@ -43,7 +43,11 @@ const PlacesMenuList = ({
         left: "0",
         width: "100%",
         minHeight: "60px",
-        maxHeight: "400px",
+        maxHeight: {
+          xs: "250px",
+          sm: "250px",
+          md: "340px",
+        },
         borderTopLeftRadius: "6px",
         borderTopRightRadius: "6px",
         marginTop: "3px",
@@ -103,8 +107,14 @@ const PlacesMenuList = ({
             }}
             sx={{
               cursor: "pointer",
-              display: "flex",
-              columnGap: "8px",
+              display: {
+                xs: "flex !important",
+                sm: "flex",
+              },
+              columnGap: {
+                xs: "15px !important",
+                sm: "8px",
+              },
               alignItems: "center",
               position: "relative",
               paddingTop: "5px",
@@ -122,7 +132,14 @@ const PlacesMenuList = ({
             <Grid>
               <LocationSVGIcon />
             </Grid>
-            <Grid sx={{ paddingRight: "12px" }}>
+            <Grid
+              sx={{
+                paddingRight: {
+                  xs: 0,
+                  sm: "12px",
+                },
+              }}
+            >
               <Typography
                 variant="body1"
                 sx={{

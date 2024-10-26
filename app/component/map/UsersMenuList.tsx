@@ -49,7 +49,11 @@ const UsersMenuList = ({
         left: "0",
         width: "100%",
         minHeight: "60px",
-        maxHeight: "400px",
+        maxHeight: {
+          xs: "250px",
+          sm: "250px",
+          md: "340px",
+        },
         borderTopLeftRadius: "6px",
         borderTopRightRadius: "6px",
         marginTop: "3px",
@@ -111,11 +115,11 @@ const UsersMenuList = ({
                 alignItems: "center",
                 position: "relative",
                 paddingTop:
-                  !user?.status?.device?.wifi ||
-                  !user?.status?.device?.battery_level ||
-                  !user?.status?.device?.charging
-                    ? "5px"
-                    : "22px",
+                  user?.status?.device?.wifi ||
+                  user?.status?.device?.battery_level ||
+                  user?.status?.device?.charging
+                    ? "22px"
+                    : "5px",
                 paddingBottom: "5px",
                 paddingLeft: "3px",
                 paddingRight: "3px",
@@ -177,7 +181,14 @@ const UsersMenuList = ({
                 />
               )}
 
-              <Grid sx={{ paddingRight: "12px" }}>
+              <Grid
+                sx={{
+                  paddingRight: {
+                    xs: 0,
+                    sm: "12px",
+                  },
+                }}
+              >
                 <Typography
                   variant="body1"
                   sx={{

@@ -133,6 +133,7 @@ const GroupManagement = ({
   const [editFencesSuccess, setEditFencesSuccess] = useState(false);
   const [editFenceserror, setEditFenceserror] = useState(false);
   const [editFencesErrorMsg, setEditFencesErrorMsg] = useState("");
+  const [mobileDeviceModal, setMobileDeviceModal] = useState(false);
 
   const handleAddMemberSuccessModalClose = () => {
     setAddMemberSuccess(false);
@@ -270,18 +271,51 @@ const GroupManagement = ({
       ) : (
         ""
       )}
+      {/* Mobile device grid */}
+      <Grid
+        onClick={() => {
+          handleGroupsModalHide();
+          setMobileDeviceModal(true);
+        }}
+        sx={{
+          display: {
+            xs: mobileDeviceModal ? "none" : "block",
+            md: "none",
+          },
+          width: "100%",
+          height: "100vh",
+          backgroundColor: Colors.white,
+          opacity: 0.4,
+          position: "absolute",
+          zIndex: 1000,
+        }}
+      ></Grid>
 
       <Grid
         sx={{
           zIndex: 1000,
           position: "absolute",
           top: "50%",
-          left: moveCreateGroupForm ? "360px" : "50%",
-          transform: moveCreateGroupForm
-            ? "translate(0, -50%)"
-            : "translate(-50%, -50%)",
+          left: {
+            xs: "50%",
+            md: moveCreateGroupForm ? "360px" : "50%",
+          },
+          transform: {
+            xs: "translate(-50%, -50%)",
+            md: moveCreateGroupForm
+              ? "translate(0, -50%)"
+              : "translate(-50%, -50%)",
+          },
           backgroundColor: Colors.black,
-          minWidth: "400px",
+          minWidth: {
+            xs: "80%",
+            sm: "400px",
+          },
+          maxWidth: {
+            xs: "80%",
+            sm: "80%",
+            md: "60%",
+          },
           padding: "20px 20px",
           borderRadius: "8px",
           maxHeight: "100vh",
@@ -290,6 +324,25 @@ const GroupManagement = ({
             display: "none",
           },
         }}
+
+        // sx={{
+        //   zIndex: 1000,
+        //   position: "absolute",
+        //   top: "50%",
+        //   left: moveCreateGroupForm ? "360px" : "50%",
+        //   transform: moveCreateGroupForm
+        //     ? "translate(0, -50%)"
+        //     : "translate(-50%, -50%)",
+        //   backgroundColor: Colors.black,
+        //   minWidth: "400px",
+        //   padding: "20px 20px",
+        //   borderRadius: "8px",
+        //   maxHeight: "100vh",
+        //   overflowY: "auto",
+        //   "&::-webkit-scrollbar": {
+        //     display: "none",
+        //   },
+        // }}
       >
         <IconButton
           edge="start"

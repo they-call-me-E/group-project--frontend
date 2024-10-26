@@ -198,7 +198,8 @@ const UserInformation = ({
               }}
             >
               {/* @ts-ignore*/}
-              {userInformationData?.name && userInformationData?.name}
+              {userInformationData?.name &&
+                userInformationData?.name?.split(" ")[0]}
             </Typography>
           </Grid>
 

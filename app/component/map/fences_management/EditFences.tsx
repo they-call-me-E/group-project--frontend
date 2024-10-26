@@ -106,7 +106,7 @@ const EditFences = ({
       <Grid
         onClick={() => {
           setOpenEditFencesModal(false);
-          setOpenViewFencesModal(true)
+          setOpenViewFencesModal(true);
         }}
         sx={{
           position: "absolute",
@@ -124,9 +124,20 @@ const EditFences = ({
           zIndex: 1000,
           position: "absolute",
           top: "50%",
-          left: "360px",
-          transform: "translate(0, -50%)",
-          width: "400px",
+          left: {
+            xs: "50%",
+            sm: "50%",
+            md: "360px",
+          },
+          transform: {
+            xs: "translate(-50%, -50%)",
+            sm: "translate(-50%, -50%)",
+            md: "translate(0, -50%)",
+          },
+          width: {
+            xs: "90%",
+            sm: "400px",
+          },
           backgroundColor: Colors.black,
           padding: "20px 20px",
           borderRadius: "8px",
@@ -136,10 +147,9 @@ const EditFences = ({
           edge="start"
           color="inherit"
           aria-label="close"
-          onClick={() =>{ 
-            setOpenViewFencesModal(true)
-            setOpenEditFencesModal(false) 
-
+          onClick={() => {
+            setOpenViewFencesModal(true);
+            setOpenEditFencesModal(false);
           }}
           sx={{
             position: "absolute",
