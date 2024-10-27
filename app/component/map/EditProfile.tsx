@@ -41,6 +41,7 @@ const EditProfile = ({
     useUserActionOpenContext();
 
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
+  const [mobileDeviceModal, setMobileDeviceModal] = useState(false);
 
   const formik = useFormik<FormValues>({
     initialValues: {
@@ -137,17 +138,45 @@ const EditProfile = ({
           opacity: 0.4,
         }}
       ></Grid>
+      {/* Mobile device grid */}
+      <Grid
+        onClick={() => {
+          editProfleModalFormHide();
+          setMobileDeviceModal(true);
+        }}
+        sx={{
+          display: {
+            xs: mobileDeviceModal ? "none" : "block",
+            md: "none",
+          },
+          width: "100%",
+          height: "100vh",
+          backgroundColor: Colors.white,
+          opacity: 0.4,
+          position: "absolute",
+          zIndex: 1000,
+        }}
+      ></Grid>
       <Grid
         sx={{
           zIndex: 1000,
           position: "absolute",
           top: "50%",
-          left: moveEditProfileForm ? "360px" : "50%",
-          transform: moveEditProfileForm
-            ? "translate(0, -50%)"
-            : "translate(-50%, -50%)",
+          left: {
+            xs: "50%",
+            md: moveEditProfileForm ? "360px" : "50%",
+          },
+          transform: {
+            xs: "translate(-50%, -50%)",
+            md: moveEditProfileForm
+              ? "translate(0, -50%)"
+              : "translate(-50%, -50%)",
+          },
           backgroundColor: Colors.black,
-          width: "400px",
+          width: {
+            xs: "80%",
+            sm: "400px",
+          },
           padding: "20px 20px",
           borderRadius: "8px",
           maxHeight: "100vh",
@@ -178,7 +207,7 @@ const EditProfile = ({
         <Typography
           variant="body1"
           sx={{
-            color:Colors.blue,
+            color: Colors.blue,
             letterSpacing: 0.8,
             textAlign: "center",
             padding: "3px 0",
@@ -342,8 +371,14 @@ const EditProfile = ({
                   disabled={selectedImage ? true : false}
                   variant="contained"
                   component="label"
+                  sx={{
+                    fontSize: {
+                      xs: "12px",
+                      sm: "14px",
+                    },
+                  }}
                 >
-                  Upload Profile Picture
+                  Upload Profile Photo
                   <input
                     type="file"
                     hidden

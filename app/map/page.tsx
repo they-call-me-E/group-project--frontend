@@ -115,6 +115,39 @@ export default function Home() {
         .catch((error: any) => {});
     }
   }, [status]);
+
+  // If user is authenticated and any group is selected then this useEffect hook will be execute  code start
+  useEffect(() => {
+    const fetchData = async (group_id: any) => {
+      let usersRes, placesRes;
+      try {
+        usersRes = await usersMenuDataList(group_id);
+      } catch (error) {}
+
+      try {
+        placesRes = await placesMenuDataList(group_id);
+      } catch (error) {}
+
+      // Check for different scenarios
+      if (usersRes && placesRes) {
+        groupIdHandleClick(group_id);
+      } else if (usersRes) {
+        groupIdHandleClick(group_id);
+      } else if (placesRes) {
+        groupIdHandleClick(group_id);
+      } else {
+      }
+    };
+
+    const groupIdInfo = localStorage.getItem("group_id");
+
+    if (groupIdInfo && status === "authenticated") {
+      let group_id = groupIdInfo.replace(/"/g, "");
+
+      fetchData(group_id);
+    }
+  }, [status]);
+  // If user is authenticated and any group is selected then this useEffect hook will be execute  code end
   const reFetchGroupListData = () => {
     // @ts-ignore
     handleGroupList(session?.user?.token)

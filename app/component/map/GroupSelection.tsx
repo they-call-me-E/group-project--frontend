@@ -53,6 +53,12 @@ const GroupSelection = ({
     }
   };
 
+  useEffect(() => {
+    // set groupId on localStorage if user is authenticated
+    if (groupId) {
+      localStorage.setItem("group_id", JSON.stringify(groupId));
+    }
+  }, [groupId]);
   return (
     <FormControl fullWidth>
       <Typography

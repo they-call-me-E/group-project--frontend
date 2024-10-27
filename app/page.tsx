@@ -7,12 +7,20 @@ import { Colors } from "./theme/colors";
 import ForgotPassword from "./component/forgotPassword/form";
 import { useState } from "react";
 import AlertMessage from "./component/message/AlertMessage";
+import { useEffect } from "react";
 
 const Home = () => {
   const [forgotPasswordModal, setForgotPasswordModal] = useState(false);
   const [checkErrorStatus, setCheckErrorStatus] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const { session, status } = useRedirectIfAuthenticated();
+
+  useEffect(() => {
+    // remove groupId from localStorage if user is unauthenticated
+    if (status === "unauthenticated") {
+      localStorage.removeItem("group_id");
+    }
+  }, [status]);
 
   if (status === "loading") {
     return (
