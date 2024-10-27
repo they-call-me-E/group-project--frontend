@@ -350,17 +350,16 @@ const Map = ({
         type: "circle",
         source: `circle-${latitude}-${longitude}`,
         paint: {
-        
           "circle-radius": [
             "interpolate",
             ["linear"],
             ["zoom"],
             5,
-            30, 
+            30,
             10,
-            80, 
+            80,
             15,
-            120, 
+            120,
           ],
           "circle-color": Colors.blue,
           "circle-opacity": 0.2,
@@ -467,16 +466,18 @@ const Map = ({
         // get user data if userList array length is 0 code start
         handleUserInformation(session?.user?.token, session?.user?.id)
           .then((res: any) => {
-            membersData?.push({
-              id: res?.data?.user?.uuid,
-              name: res?.data?.user?.name,
-              location: res?.data?.user?.location,
-              status: res?.data?.user?.status,
-              avatar:
-                "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/pngimg.com%20-%20deadpool_PNG15.png",
-              badgeImageUrl:
-                "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png",
-            });
+            if (res?.data?.user?.status?.isMoving) {
+              membersData?.push({
+                id: res?.data?.user?.uuid,
+                name: res?.data?.user?.name,
+                location: res?.data?.user?.location,
+                status: res?.data?.user?.status,
+                avatar:
+                  "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/pngimg.com%20-%20deadpool_PNG15.png",
+                badgeImageUrl:
+                  "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png",
+              });
+            }
 
             removePreviousMarkers();
 
@@ -488,7 +489,10 @@ const Map = ({
         // get user data if userList array length is 0 code end
       } else if (userList?.length > 0) {
         userList?.forEach((user) => {
-          if (Object.keys(user?.location).length !== 0) {
+          if (
+            Object.keys(user?.location).length !== 0 &&
+            user?.status?.isMoving
+          ) {
             membersData.push({
               id: user?.uuid,
               name: user?.name,

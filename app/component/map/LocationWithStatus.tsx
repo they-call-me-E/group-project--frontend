@@ -177,7 +177,7 @@ const LocationWithStatus = ({
           }
         );
 
-        if (response?.data?.locationWithStatus) {
+        if (response?.data?.user) {
           setSuccess(true);
           const users_menu_list_res = await usersMenuDataList(groupId);
           // resetForm();

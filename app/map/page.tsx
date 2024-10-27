@@ -320,7 +320,7 @@ export default function Home() {
               xs: "70%",
               sm: "350px",
             },
-            height: "100vh",
+            height: "100dvh",
             backgroundColor: Colors.black,
             zIndex: 1000,
             boxShadow: "2px 0px 5px rgba(0, 0, 0, 0.2)",
