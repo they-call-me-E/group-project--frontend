@@ -9,11 +9,11 @@ import Image from "next/image";
 import DefaultUser from "./../../../assets/default_user.png";
 import { useSession } from "next-auth/react";
 import axios from "axios";
-
 import { TextField, Box, Button, Typography } from "@mui/material";
 import { useFormik, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import { useUserActionOpenContext } from "../../context/map/UserActionContext";
+import { useGroupSelectionContext } from "../../context/map/GroupSelectionContext";
 
 interface FormValues {
   name: string;
@@ -23,12 +23,14 @@ interface FormValues {
 }
 
 const EditProfile = ({
+  usersMenuDataList,
   moveEditProfileForm,
   handleUserInformation,
   userInformationData,
   setUserInformationData,
   setSuccess,
 }: {
+  usersMenuDataList: (group_id: string) => void;
   moveEditProfileForm: boolean;
   handleUserInformation: (token: string, user_id: string) => void;
   userInformationData: any;
@@ -39,7 +41,7 @@ const EditProfile = ({
   const [loading, setLoading] = useState(false);
   const { editProfleModalFormHide, handleHide: userActionHandleHide } =
     useUserActionOpenContext();
-
+  const { groupId } = useGroupSelectionContext();
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
   const [mobileDeviceModal, setMobileDeviceModal] = useState(false);
 
@@ -89,6 +91,7 @@ const EditProfile = ({
 
         if (response?.data?.user) {
           setSuccess(true);
+          await usersMenuDataList(groupId);
           // resetForm();
           // @ts-ignore
           const res: any = await handleUserInformation(

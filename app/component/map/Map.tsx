@@ -15,6 +15,7 @@ import { Colors } from "../../theme/colors";
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
 interface MapProps {
+  editProfileSuccess: boolean;
   locationWithStatusSuccess: boolean;
   placesList: any[];
   userList: any[];
@@ -24,6 +25,7 @@ interface MapProps {
 }
 
 const Map = ({
+  editProfileSuccess,
   locationWithStatusSuccess,
   placesList,
   userList,
@@ -167,8 +169,8 @@ const Map = ({
               </g>
             </svg>
            </div>`
-           : `<img
-        src="https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/pngimg.com%20-%20deadpool_PNG15.png"
+           : `<img 
+        src=${member?.avatar} ? "${process.env.NEXT_PUBLIC_IMAGE_API_URL}/img/users/${member?.avatar}" : "/default_user.png"
         alt="image"
       />`
        }
@@ -203,7 +205,15 @@ const Map = ({
           member?.status?.speed ? '<span class="span_bold">Speed:</span>' : ""
         }      
           <span class="span_normal">${
-            member?.status?.speed ? member?.status?.speed : ""
+            member?.status?.speed
+              ? member?.status?.speed +
+                "km/h" +
+                " " +
+                "(" +
+                convertToMph(member?.status?.speed) +
+                "mph" +
+                ")"
+              : ""
           }</span>
         </p>
         ${
@@ -472,8 +482,9 @@ const Map = ({
                 name: res?.data?.user?.name,
                 location: res?.data?.user?.location,
                 status: res?.data?.user?.status,
-                avatar:
-                  "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/pngimg.com%20-%20deadpool_PNG15.png",
+                avatar: res?.data?.user?.avatar
+                  ? `${process.env.NEXT_PUBLIC_IMAGE_API_URL}/img/users/${res?.data?.user?.avatar}`
+                  : "/default_user.png",
                 badgeImageUrl:
                   "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png",
               });
@@ -498,8 +509,9 @@ const Map = ({
               name: user?.name,
               location: user?.location,
               status: user?.status,
-              avatar:
-                "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/pngimg.com%20-%20deadpool_PNG15.png",
+              avatar: user?.avatar
+                ? `${process.env.NEXT_PUBLIC_IMAGE_API_URL}/img/users/${user?.avatar}`
+                : "/default_user.png",
               badgeImageUrl:
                 "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png",
             });
@@ -515,7 +527,7 @@ const Map = ({
         addMember(item, mapMain);
       });
     }
-  }, [groupId, locationWithStatusSuccess, mapMain]);
+  }, [groupId, locationWithStatusSuccess, editProfileSuccess, mapMain]);
 
   return (
     <>

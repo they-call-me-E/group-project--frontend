@@ -396,11 +396,13 @@ export default function Home() {
           mapMain={mapMain}
           setMapMain={setMapMain}
           locationWithStatusSuccess={locationWithStatusSuccess}
+          editProfileSuccess={editProfileSuccess}
         />
       </Grid>
       {/* EditProfile related code*/}
       {editProfileModalForm ? (
         <EditProfile
+          usersMenuDataList={usersMenuDataList}
           moveEditProfileForm={moveEditProfileForm}
           handleUserInformation={handleUserInformation}
           userInformationData={userInformationData}
