@@ -3,20 +3,32 @@ import Grid from "@mui/material/Grid2";
 import { useFormik, FormikHelpers } from "formik";
 import * as Yup from "yup";
 import axios from "axios";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { TextField, Box, Button, Typography } from "@mui/material";
+import { TextField, Box, Button, Typography, Slider } from "@mui/material";
 import { IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import mapboxgl from "mapbox-gl";
+import { useUserActionOpenContext } from "../../../context/map/UserActionContext";
 
 interface FormValues {
   name: string;
+  address: string;
   latitude: number | null;
   longitude: number | null;
   radius: number | null;
 }
 
 const CreateFences = ({
+  updateFencesNewMarker,
+  fencesLng,
+  setFencesLng,
+  fencesLat,
+  setFencesLat,
+  fencesAddress,
+  setFencesAddress,
+  clearCreateFencesNewMarker,
+  mapMain,
   setOpenViewGroupModal,
   setOpenFencesManagementModal,
   setOpenCreateFencesModal,
@@ -26,6 +38,19 @@ const CreateFences = ({
   setCreateFencesErrorMsg,
 }: // reFetchGroupListData,
 {
+  updateFencesNewMarker: (
+    placesData: any,
+    mapInstance: mapboxgl.Map,
+    radiusValue: number
+  ) => any;
+  clearCreateFencesNewMarker: () => void;
+  fencesLng: any;
+  setFencesLng: React.Dispatch<React.SetStateAction<any>>;
+  fencesLat: any;
+  setFencesLat: React.Dispatch<React.SetStateAction<any>>;
+  fencesAddress: string;
+  setFencesAddress: React.Dispatch<React.SetStateAction<string>>;
+  mapMain: mapboxgl.Map | null;
   setOpenViewGroupModal: React.Dispatch<React.SetStateAction<any>>;
   setOpenFencesManagementModal: React.Dispatch<React.SetStateAction<any>>;
   setOpenCreateFencesModal: React.Dispatch<React.SetStateAction<any>>;
@@ -35,17 +60,22 @@ const CreateFences = ({
   setCreateFencesErrorMsg: React.Dispatch<React.SetStateAction<any>>;
   // reFetchGroupListData: () => void;
 }) => {
+  const { handleGroupModalReset } = useUserActionOpenContext();
+  const [radiusValue, setRadiusValue] = useState<any>(null);
   const { data: session, status } = useSession();
   const [loading, setLoading] = useState(false);
+  const [radisuRange, setRadiusRange] = useState([0, 400]);
   const formik = useFormik<FormValues>({
     initialValues: {
       name: "",
-      latitude: null,
-      longitude: null,
+      address: fencesAddress ? fencesAddress : "",
+      latitude: fencesLat ? fencesLat : null,
+      longitude: fencesLng ? fencesLng : null,
       radius: null,
     },
     validationSchema: Yup.object({
       name: Yup.string().required("Fences Name is required"),
+      address: Yup.string(),
       latitude: Yup.number()
         .typeError("Must be a number")
         .min(-90, "Latitude must be between -90 and 90")
@@ -74,6 +104,17 @@ const CreateFences = ({
         if (values?.radius) {
           reqBody["radius"] = values.radius;
         }
+        if (
+          (values?.latitude && !values?.longitude) ||
+          (values?.longitude && !values?.latitude)
+        ) {
+          setCreateFenceserror(true);
+          setCreateFencesErrorMsg(
+            "Both latitude and longitude must be selected. Please ensure that both fields are filled in"
+          );
+          return;
+        }
+
         const response = await axios.post(
           // @ts-ignore
           `${process.env.NEXT_PUBLIC_API_URL}/group/${editGroupInformation?.uuid}/fences/create`,
@@ -93,7 +134,9 @@ const CreateFences = ({
         if (response?.data?.document) {
           setOpenCreateFencesModal(false);
           setCreateFencesSuccess(true);
-          setOpenFencesManagementModal(true);
+          // setOpenFencesManagementModal(true);
+          clearCreateFencesNewMarker();
+          handleGroupModalReset();
           // reFetchGroupListData();
         }
       } catch (error: any) {
@@ -107,46 +150,44 @@ const CreateFences = ({
     },
   });
 
+  useEffect(() => {
+    formik.setFieldValue("address", fencesAddress);
+    formik.setFieldValue("latitude", fencesLat);
+    formik.setFieldValue("longitude", fencesLng);
+    formik.setFieldValue("radius", radiusValue);
+  }, [fencesAddress, fencesLat, fencesLng, radiusValue]);
+
+  const handleChange = (event: Event, newValue: number | number[]) => {
+    const rangeValue = newValue as number[];
+    setRadiusValue(rangeValue[0]);
+    setRadiusRange(rangeValue);
+    if (fencesLat && fencesLng) {
+      updateFencesNewMarker(
+        { latitude: fencesLat, longitude: fencesLng },
+        // @ts-ignore
+        mapMain,
+        rangeValue[0]
+      );
+    }
+  };
+
   return (
     <>
       <Grid
-        onClick={() => {
-          setOpenCreateFencesModal(false);
-          setOpenViewGroupModal(true);
-        }}
         sx={{
+          zIndex: 1000,
           position: "absolute",
           top: 0,
           left: 0,
-          width: "100%",
-          height: "100%",
-          zIndex: 1000,
-          backgroundColor: Colors.white,
-          opacity: 0.4,
-        }}
-      ></Grid>
-      <Grid
-        sx={{
-          zIndex: 1000,
-          position: "absolute",
-          top: "50%",
-          left: {
-            xs: "50%",
-            sm: "50%",
-            md: "360px",
-          },
-          transform: {
-            xs: "translate(-50%, -50%)",
-            sm: "translate(-50%, -50%)",
-            md: "translate(0, -50%)",
-          },
+          transform: "translate(0, 0)",
           width: {
-            xs: "90%",
-            sm: "400px",
+            xs: "40%",
+            sm: "350px",
           },
+          height: "100dvh",
           backgroundColor: Colors.black,
           padding: "20px 20px",
-          borderRadius: "8px",
+          borderRadius: 0,
         }}
       >
         <IconButton
@@ -154,8 +195,9 @@ const CreateFences = ({
           color="inherit"
           aria-label="close"
           onClick={() => {
-            setOpenViewGroupModal(true);
+            clearCreateFencesNewMarker();
             setOpenCreateFencesModal(false);
+            handleGroupModalReset();
           }}
           sx={{
             position: "absolute",
@@ -224,6 +266,43 @@ const CreateFences = ({
                 }}
               />
             </Box>
+            {/* address */}
+            <Box mb={2}>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: Colors.white,
+                  fontWeight: "300",
+                  letterSpacing: 0.8,
+                  textAlign: "start",
+                  fontSize: "14px",
+                }}
+                mb={1}
+              >
+                Address
+              </Typography>
+
+              <TextField
+                fullWidth
+                placeholder="Address"
+                name="address"
+                value={formik.values.address}
+                onChange={formik.handleChange}
+                onBlur={formik.handleBlur}
+                error={formik.touched.address && Boolean(formik.errors.address)}
+                helperText={formik.touched.address && formik.errors.address}
+                sx={{
+                  "& .MuiInputBase-input": {
+                    paddingTop: "8px",
+                    paddingBottom: "8px",
+                    backgroundColor: "transparent",
+                  },
+                  "&.Mui-focused": {
+                    backgroundColor: "transparent",
+                  },
+                }}
+              />
+            </Box>
             {/* Latitude */}
             <Box mb={2}>
               <Typography
@@ -241,12 +320,17 @@ const CreateFences = ({
               </Typography>
 
               <TextField
+                disabled={true}
                 type="number"
                 fullWidth
                 placeholder="Latitude"
                 name="latitude"
                 value={formik.values.latitude}
-                onChange={formik.handleChange}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  const value = event.target.value;
+                  formik.handleChange(event); // Update Formik state
+                  setFencesLat(value ? parseFloat(value) : null); // Update local state
+                }}
                 onBlur={formik.handleBlur}
                 error={
                   formik.touched.latitude && Boolean(formik.errors.latitude)
@@ -281,12 +365,17 @@ const CreateFences = ({
               </Typography>
 
               <TextField
+                disabled={true}
                 type="number"
                 fullWidth
                 placeholder="Longitude"
                 name="longitude"
                 value={formik.values.longitude}
-                onChange={formik.handleChange}
+                onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                  const value = event.target.value;
+                  formik.handleChange(event); // Update Formik state
+                  setFencesLng(value ? parseFloat(value) : null); // Update local state
+                }}
                 onBlur={formik.handleBlur}
                 error={
                   formik.touched.longitude && Boolean(formik.errors.longitude)
@@ -321,6 +410,7 @@ const CreateFences = ({
               </Typography>
 
               <TextField
+                disabled={true}
                 type="number"
                 fullWidth
                 placeholder="Radius"
@@ -343,6 +433,33 @@ const CreateFences = ({
               />
             </Box>
           </Grid>
+
+          <Box sx={{ width: 300, padding: 2 }}>
+            <Slider
+              value={radisuRange}
+              onChange={handleChange}
+              valueLabelDisplay="auto"
+              min={0}
+              max={400}
+              marks={[
+                { value: 0, label: "0" },
+                { value: 400, label: "400" },
+              ]}
+              sx={{
+                color: "primary.main",
+                "& .MuiSlider-thumb": {
+                  backgroundColor: Colors.blue,
+                  border: "2px solid currentColor",
+                },
+                "& .MuiSlider-track": {
+                  backgroundColor: Colors.blue,
+                },
+                "& .MuiSlider-rail": {
+                  backgroundColor: Colors.blue,
+                },
+              }}
+            />
+          </Box>
           <Button
             disabled={loading}
             type="submit"
@@ -355,9 +472,10 @@ const CreateFences = ({
             }}
             fullWidth
           >
-            Submit
+            Save
           </Button>
         </form>
+
         {/* updated code end */}
       </Grid>
     </>

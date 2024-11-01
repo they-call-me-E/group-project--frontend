@@ -1,16 +1,17 @@
 "use client";
 // @ts-nocheck
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import mapboxgl from "mapbox-gl";
-import * as turf from "@turf/turf";
 import Grid from "@mui/material/Grid2";
 import { useGroupSelectionContext } from "../../context/map/GroupSelectionContext";
 import { convertToDMS } from "./../../utils/convertToDMS";
 import { convertToMph } from "./../../utils/convertToMPH";
 import { handleUserInformation } from "./../../utils/api/userInformation";
 import { useSession } from "next-auth/react";
-import ReactMapGL, { Source, Layer, Marker } from "react-map-gl";
 import { Colors } from "../../theme/colors";
+import { useMarkerOnMapContext } from "./../../context/map/MarkerOnMapContext";
+import { usePlacesMenuListOpenContext } from "./../../context/map/PlacesMenuListContext";
+
 // @ts-ignore
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
@@ -34,7 +35,17 @@ const Map = ({
   setMapMain,
 }: MapProps) => {
   const { data: session, status }: { data: any; status: string } = useSession();
-  const [markersArray, setMarkersArray] = useState<any[]>([]);
+  const {
+    markersArray,
+    setMarkersArray,
+    placesMarkersArray,
+    setPlacesMarkersArray,
+  } = useMarkerOnMapContext();
+  const { hideCreateFences } = usePlacesMenuListOpenContext();
+
+  // const [markersArray, setMarkersArray] = useState<any[]>([]);
+  // const [placesMarkersArray, setPlacesMarkersArray] = useState<any[]>([]);
+  const mapContainerRef = React.useRef(null);
   const { groupId, handleClick: groupIdHandleClick } =
     useGroupSelectionContext();
   let activeMarker: any;
@@ -234,10 +245,51 @@ const Map = ({
   };
 
   // Function to remove previous markers from the map
-  const removePreviousMarkers = () => {
-    markersArray.forEach((marker) => marker.remove());
+  // const removePreviousMarkers = (mapInstance: mapboxgl.Map) => {
+  //   placesMarkersArray.forEach((marker: any) => {
+  //     marker.remove();
+
+  //     const [longitude, latitude] = marker.getLngLat().toArray();
+  //     const sourceId = `circle-${latitude}-${longitude}`;
+  //     const layerId = `circle-layer-${latitude}-${longitude}`;
+
+  //     if (mapInstance?.getLayer(layerId)) {
+  //       mapInstance?.removeLayer(layerId);
+  //     }
+  //     if (mapInstance?.getSource(sourceId)) {
+  //       mapInstance?.removeSource(sourceId);
+  //     }
+  //   });
+  //   // removePreMarkers code start
+
+  //   markersArray.forEach((marker: any) => marker.remove());
+  //   setMarkersArray([]);
+  //   // removePreMarkers code end
+  //   setPlacesMarkersArray([]);
+  // };
+
+  const removePreviousUsersMarkers = (mapInstance: mapboxgl.Map) => {
+    markersArray.forEach((marker: any) => marker.remove());
     setMarkersArray([]);
   };
+  const removePreviousPlacesMarkers = (mapInstance: mapboxgl.Map) => {
+    placesMarkersArray.forEach((marker: any) => {
+      marker.remove();
+
+      const [longitude, latitude] = marker.getLngLat().toArray();
+      const sourceId = `circle-${latitude}-${longitude}`;
+      const layerId = `circle-layer-${latitude}-${longitude}`;
+
+      if (mapInstance?.getLayer(layerId)) {
+        mapInstance?.removeLayer(layerId);
+      }
+      if (mapInstance?.getSource(sourceId)) {
+        mapInstance?.removeSource(sourceId);
+      }
+    });
+    setPlacesMarkersArray([]);
+  };
+
   const addMember = (membersData: any, mapInstance: any) => {
     let el = document.createElement("div");
     el.className = "marker " + membersData.id;
@@ -324,7 +376,7 @@ const Map = ({
       activeMarker = marker;
       flytoMemberLocation(membersData, mapInstance);
     });
-    setMarkersArray((prevMarkers) => [...prevMarkers, marker]);
+    setMarkersArray((prevMarkers: any) => [...prevMarkers, marker]);
     return marker;
   };
 
@@ -385,6 +437,7 @@ const Map = ({
     }
 
     // Create the marker element with a custom SVG icon
+
     const markerElement = document.createElement("div");
     markerElement.innerHTML = `
       <div class="places_icon_parent">
@@ -409,13 +462,17 @@ const Map = ({
       </div>
     `;
 
-    // Create and place the marker on the map
-    let marker = new mapboxgl.Marker(markerElement);
+    const marker = new mapboxgl.Marker({
+      // draggable: true,
+      element: markerElement,
+    });
     if (longitude && latitude) {
       marker.setLngLat([longitude, latitude]).addTo(mapInstance);
     }
 
     // Return the marker for later reference
+    // setMarkersArray((prevMarkers: any) => [...prevMarkers, marker]);
+    setPlacesMarkersArray((prevMarkers: any) => [...prevMarkers, marker]);
     return marker;
   };
 
@@ -424,7 +481,11 @@ const Map = ({
   useEffect(() => {
     if (!mapMain) {
       const mapInstance = new mapboxgl.Map({
-        container: "map",
+        // old code
+        // container: "map",
+        // new code
+        // @ts-ignore
+        container: mapContainerRef.current,
         style: "mapbox://styles/mapbox/dark-v10",
         zoom: 8,
         center: [-82.04842360357094, 35.18969231143789],
@@ -490,7 +551,8 @@ const Map = ({
               });
             }
 
-            removePreviousMarkers();
+            // removePreviousMarkers(mapMain);
+            removePreviousUsersMarkers(mapMain);
 
             membersData.forEach(function (item) {
               addMember(item, mapMain);
@@ -519,7 +581,9 @@ const Map = ({
         });
       }
 
-      removePreviousMarkers();
+      // removePreviousMarkers(mapMain);
+      removePreviousUsersMarkers(mapMain);
+      removePreviousPlacesMarkers(mapMain);
       placesData.forEach(function (item) {
         addPlaces(item, mapMain);
       });
@@ -533,6 +597,7 @@ const Map = ({
     <>
       <Grid className="map-container">
         <Grid
+          ref={mapContainerRef}
           id="map"
           style={{
             position: "absolute",

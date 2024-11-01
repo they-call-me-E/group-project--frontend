@@ -33,6 +33,9 @@ import ViewFences from "./fences_management/ViewFences";
 import EditFences from "./fences_management/EditFences";
 import { IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
+import { useMarkerOnMapContext } from "./../../context/map/MarkerOnMapContext";
+import mapboxgl from "mapbox-gl";
+import { getAddressFromCoordinates } from "./../../utils/getAddressFromCoordinates";
 
 // Define custom styled components
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
@@ -82,17 +85,22 @@ function createData(
 }
 
 const GroupManagement = ({
+  setMenuOpen,
+  mapMain,
   moveCreateGroupForm,
   groupInformationData,
   setGroupInformationData,
   reFetchGroupListData,
 }: {
+  setMenuOpen: React.Dispatch<React.SetStateAction<any>>;
+  mapMain: mapboxgl.Map | null;
   moveCreateGroupForm: any;
   groupInformationData: any[];
   setGroupInformationData: React.Dispatch<React.SetStateAction<any>>;
   reFetchGroupListData: () => void;
 }) => {
-  const { handleGroupsModalHide } = useUserActionOpenContext();
+  const { handleGroupsModalHide, groupsModalWithFences } =
+    useUserActionOpenContext();
   const { data: session, status }: { data: any; status: any } = useSession();
   const [openEditGroupModal, setOpenEditGroupModal] = useState(false);
   const [openCreateFencesModal, setOpenCreateFencesModal] = useState(false);
@@ -134,6 +142,232 @@ const GroupManagement = ({
   const [editFenceserror, setEditFenceserror] = useState(false);
   const [editFencesErrorMsg, setEditFencesErrorMsg] = useState("");
   const [mobileDeviceModal, setMobileDeviceModal] = useState(false);
+  const [fencesLng, setFencesLng] = useState<any>(null);
+  const [fencesLat, setFencesLat] = useState<any>(null);
+  const [fencesAddress, setFencesAddress] = useState<string>("");
+
+  const {
+    markersArray,
+    setMarkersArray,
+    placesMarkersArray,
+    setPlacesMarkersArray,
+    createFencesMarkersArray,
+    setCreateFencesMarkersArray,
+  } = useMarkerOnMapContext();
+
+  // create fences related marker code start
+  const clearPreviousAllMarkers = () => {
+    placesMarkersArray.forEach((marker: any) => {
+      marker.remove();
+
+      const [longitude, latitude] = marker.getLngLat().toArray();
+      const sourceId = `circle-${latitude}-${longitude}`;
+      const layerId = `circle-layer-${latitude}-${longitude}`;
+
+      if (mapMain?.getLayer(layerId)) {
+        mapMain?.removeLayer(layerId);
+      }
+      if (mapMain?.getSource(sourceId)) {
+        mapMain?.removeSource(sourceId);
+      }
+    });
+    // removePreMarkers code start
+    markersArray.forEach((marker: any) => marker.remove());
+    setMarkersArray([]);
+    // removePreMarkers code end
+    setPlacesMarkersArray([]);
+    //  setHideCreateFences(!hideCreateFences);
+  };
+
+  const addCreateFencesNewMarker = (
+    placesData: any,
+    mapInstance: mapboxgl.Map
+  ) => {
+    let { latitude, longitude } = placesData;
+
+    const sourceId = `circle-${latitude}-${longitude}`;
+    const layerId = `circle-layer-${latitude}-${longitude}`;
+
+    // Create a circle marker
+    const circleMarker: any = {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [longitude, latitude],
+      },
+    };
+
+    // Check if the source already exists
+    if (!mapInstance.getSource(sourceId)) {
+      // Add source for the circle
+      mapInstance.addSource(sourceId, {
+        type: "geojson",
+        data: {
+          type: "FeatureCollection",
+          features: [circleMarker],
+        },
+      });
+
+      // Add a circle layer
+      mapInstance.addLayer({
+        id: `circle-layer-${latitude}-${longitude}`,
+        type: "circle",
+        source: `circle-${latitude}-${longitude}`,
+        paint: {
+          "circle-radius": [
+            "interpolate",
+            ["linear"],
+            ["zoom"],
+            5,
+            30,
+            10,
+            80,
+            15,
+            120,
+          ],
+          "circle-color": Colors.blue,
+          "circle-opacity": 0.2,
+        },
+      });
+    } else {
+      // Update the existing source if necessary
+      const source = mapInstance.getSource(sourceId) as mapboxgl.GeoJSONSource;
+      source.setData({
+        type: "FeatureCollection",
+        features: [circleMarker],
+      });
+    }
+
+    // Create the marker element with a custom SVG icon
+
+    const markerElement = document.createElement("div");
+    markerElement.innerHTML = `
+        <div class="places_icon_parent">
+             <svg display="block" height="41px" width="27px" viewBox="0 0 27 41">
+            <g fillRule="nonzero">
+                <g transform="translate(3.0, 29.0)" fill="#000000">
+                    <ellipse opacity="0.04" cx="10.5" cy="5.80029008" rx="10.5" ry="5.25002273"></ellipse>
+                </g>
+                <g fill="#3FB1CE">
+                    <path d="M27,13.5 C27,19.074644 20.250001,27.000002 14.75,34.500002 C14.016665,35.500004 12.983335,35.500004 12.25,34.500002 C6.7499993,27.000002 0,19.222562 0,13.5 C0,6.0441559 6.0441559,0 13.5,0 C20.955844,0 27,6.0441559 27,13.5 Z"></path>
+                </g>
+                <g opacity="0.25" fill="#000000">
+                    <path d="M13.5,0 C6.0441559,0 0,6.0441559 0,13.5 C0,19.222562 6.7499993,27 12.25,34.5 C13,35.522727 14.016664,35.500004 14.75,34.5 C20.250001,27 27,19.074644 27,13.5 C27,6.0441559 20.955844,0 13.5,0 Z"></path>
+                </g>
+                <g transform="translate(6.0, 7.0)" fill="#FFFFFF"></g>
+                <g transform="translate(8.0, 8.0)">
+                    <circle fill="#000000" opacity="0.25" cx="5.5" cy="5.5" r="5.4999962"></circle>
+                    <circle fill="#FFFFFF" cx="5.5" cy="5.5" r="5.4999962"></circle>
+                </g>
+            </g>
+        </svg>
+        </div>
+      `;
+
+    const marker = new mapboxgl.Marker({
+      draggable: true,
+      element: markerElement,
+    });
+    if (longitude && latitude) {
+      marker.setLngLat([longitude, latitude]).addTo(mapInstance);
+    }
+
+    marker.on("drag", () => {
+      const { lng, lat } = marker.getLngLat();
+
+      // Update the circle's position
+      const NewCircleMarker: any = {
+        type: "Feature",
+        geometry: {
+          type: "Point",
+          coordinates: [lng, lat],
+        },
+      };
+      const source = mapInstance.getSource(sourceId) as mapboxgl.GeoJSONSource;
+      source.setData({
+        type: "FeatureCollection",
+        features: [NewCircleMarker],
+      });
+    });
+    marker.on("dragend", () => {
+      const { lng, lat } = marker.getLngLat();
+      setFencesLng(lng);
+      setFencesLat(lat);
+      getAddressFromCoordinates(lat, lng)
+        .then((res) => {
+          setFencesAddress(res);
+        })
+        .catch((error) => {
+          // setFencesAddressError()
+        });
+    });
+
+    // Return the marker for later reference
+    setCreateFencesMarkersArray((prevMarkers: any) => [...prevMarkers, marker]);
+    return marker;
+  };
+  const clearCreateFencesNewMarker = () => {
+    createFencesMarkersArray.forEach((marker: any) => {
+      marker.remove();
+      let prevLatitude = 40.7128;
+      let prevLongitude = -74.006;
+      const [longitude, latitude] = marker.getLngLat().toArray();
+      // const sourceId = `circle-${latitude}-${longitude}`;
+      // const layerId = `circle-layer-${latitude}-${longitude}`;
+      const sourceId = `circle-${prevLatitude}-${prevLongitude}`;
+      const layerId = `circle-layer-${prevLatitude}-${prevLongitude}`;
+
+      if (mapMain?.getLayer(layerId)) {
+        mapMain?.removeLayer(layerId);
+      }
+      if (mapMain?.getSource(sourceId)) {
+        mapMain?.removeSource(sourceId);
+      }
+    });
+
+    setCreateFencesMarkersArray([]);
+  };
+
+  const updateFencesNewMarker = (
+    placesData: any,
+    mapInstance: mapboxgl.Map,
+    radiusValue: number
+  ) => {
+    let prevLatitude = 40.7128;
+    let prevLongitude = -74.006;
+    let { latitude, longitude } = placesData;
+    const circleRadius = radiusValue;
+    const prevSourceId = `circle-${prevLatitude}-${prevLongitude}`;
+    const prevLayerId = `circle-layer-${prevLatitude}-${prevLongitude}`;
+    const circleMarker: any = {
+      type: "Feature",
+      geometry: {
+        type: "Point",
+        coordinates: [longitude, latitude],
+      },
+    };
+    if (!mapInstance.getSource(prevSourceId)) {
+    } else {
+      // If the source exists, update its data
+      const source = mapInstance.getSource(
+        prevSourceId
+      ) as mapboxgl.GeoJSONSource;
+      source.setData({
+        type: "FeatureCollection",
+        features: [circleMarker],
+      });
+      // If the layer exists, update its paint properties (like circle radius)
+      if (mapInstance.getLayer(prevLayerId)) {
+        mapInstance.setPaintProperty(
+          prevLayerId,
+          "circle-radius",
+          circleRadius
+        );
+      }
+    }
+  };
+
+  // create fences related marker code end
 
   const handleAddMemberSuccessModalClose = () => {
     setAddMemberSuccess(false);
@@ -247,21 +481,24 @@ const GroupManagement = ({
 
   return (
     <>
-      <Grid
-        onClick={() => {
-          handleGroupsModalHide();
-        }}
-        sx={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          width: "100%",
-          height: "100%",
-          zIndex: 100,
-          backgroundColor: Colors.white,
-          opacity: 0.4,
-        }}
-      ></Grid>
+      {!groupsModalWithFences && (
+        <Grid
+          onClick={() => {
+            handleGroupsModalHide();
+          }}
+          sx={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            zIndex: 100,
+            backgroundColor: Colors.white,
+            opacity: 0.4,
+          }}
+        ></Grid>
+      )}
+
       {alertModalOpen ? (
         <AlertModal
           message="Are you sure you want to leave this group?"
@@ -272,244 +509,253 @@ const GroupManagement = ({
         ""
       )}
       {/* Mobile device grid */}
-      <Grid
-        onClick={() => {
-          handleGroupsModalHide();
-          setMobileDeviceModal(true);
-        }}
-        sx={{
-          display: {
-            xs: mobileDeviceModal ? "none" : "block",
-            md: "none",
-          },
-          width: "100%",
-          height: "100vh",
-          backgroundColor: Colors.white,
-          opacity: 0.4,
-          position: "absolute",
-          zIndex: 1000,
-        }}
-      ></Grid>
-
-      <Grid
-        sx={{
-          zIndex: 1000,
-          position: "absolute",
-          top: "50%",
-          left: {
-            xs: "50%",
-            md: moveCreateGroupForm ? "360px" : "50%",
-          },
-          transform: {
-            xs: "translate(-50%, -50%)",
-            md: moveCreateGroupForm
-              ? "translate(0, -50%)"
-              : "translate(-50%, -50%)",
-          },
-          backgroundColor: Colors.black,
-          minWidth: {
-            xs: "80%",
-            sm: "400px",
-          },
-          maxWidth: {
-            xs: "80%",
-            sm: "80%",
-            md: "60%",
-          },
-          padding: "20px 20px",
-          borderRadius: "8px",
-          maxHeight: "100vh",
-          overflowY: "auto",
-          "&::-webkit-scrollbar": {
-            display: "none",
-          },
-        }}
-
-        // sx={{
-        //   zIndex: 1000,
-        //   position: "absolute",
-        //   top: "50%",
-        //   left: moveCreateGroupForm ? "360px" : "50%",
-        //   transform: moveCreateGroupForm
-        //     ? "translate(0, -50%)"
-        //     : "translate(-50%, -50%)",
-        //   backgroundColor: Colors.black,
-        //   minWidth: "400px",
-        //   padding: "20px 20px",
-        //   borderRadius: "8px",
-        //   maxHeight: "100vh",
-        //   overflowY: "auto",
-        //   "&::-webkit-scrollbar": {
-        //     display: "none",
-        //   },
-        // }}
-      >
-        <IconButton
-          edge="start"
-          color="inherit"
-          aria-label="close"
-          onClick={() => handleGroupsModalHide()}
+      {!groupsModalWithFences && (
+        <Grid
+          onClick={() => {
+            handleGroupsModalHide();
+            setMobileDeviceModal(true);
+          }}
           sx={{
+            display: {
+              xs: mobileDeviceModal ? "none" : "block",
+              md: "none",
+            },
+            width: "100%",
+            height: "100vh",
+            backgroundColor: Colors.white,
+            opacity: 0.4,
             position: "absolute",
-            right: "6px",
-            top: "6px",
-            backgroundColor: Colors.red,
-            borderRadius: "50px",
-            "&:hover": {
-              backgroundColor: Colors.red,
+            zIndex: 1000,
+          }}
+        ></Grid>
+      )}
+
+      {!groupsModalWithFences && (
+        <Grid
+          sx={{
+            zIndex: 1000,
+            position: "absolute",
+            top: "50%",
+            left: {
+              xs: "50%",
+              md: moveCreateGroupForm ? "360px" : "50%",
+            },
+            transform: {
+              xs: "translate(-50%, -50%)",
+              md: moveCreateGroupForm
+                ? "translate(0, -50%)"
+                : "translate(-50%, -50%)",
+            },
+            backgroundColor: Colors.black,
+            minWidth: {
+              xs: "80%",
+              sm: "400px",
+            },
+            maxWidth: {
+              xs: "80%",
+              sm: "80%",
+              md: "60%",
+            },
+            padding: "20px 20px",
+            borderRadius: "8px",
+            maxHeight: "100vh",
+            overflowY: "auto",
+            "&::-webkit-scrollbar": {
+              display: "none",
             },
           }}
-        >
-          <CloseIcon sx={{ color: Colors.white, fontSize: "16px" }} />
-        </IconButton>
-        <Grid>
-          <h6
-            style={{ color: Colors.blue }}
-            className="py-1 px-1 font-bold text-center mb-2"
-          >
-            Group List
-          </h6>
-          <TableContainer component={Paper} sx={{ borderRadius: 0 }}>
-            <Table
-              sx={{
-                minWidth: 700,
-              }}
-              aria-label="customized table"
-            >
-              <TableHead>
-                <TableRow>
-                  <StyledTableCell
-                    align="left"
-                    sx={{
-                      paddingTop: "3px",
-                      paddingBottom: "3px",
-                      backgroundColor: `${Colors.black} !important`,
-                      color: `${Colors.white} !important`,
-                    }}
-                  >
-                    Group Name
-                  </StyledTableCell>
-                  <StyledTableCell
-                    align="center"
-                    sx={{
-                      paddingTop: "3px",
-                      paddingBottom: "3px",
-                      backgroundColor: `${Colors.black} !important`,
-                      color: `${Colors.white} !important`,
-                    }}
-                  >
-                    Total Members
-                  </StyledTableCell>
 
-                  <StyledTableCell
-                    align="right"
-                    sx={{
-                      paddingTop: "3px",
-                      paddingBottom: "3px",
-                      backgroundColor: `${Colors.black} !important`,
-                      color: `${Colors.white} !important`,
-                    }}
-                  >
-                    Action
-                  </StyledTableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {groupInformationData.map((row: any, i) => (
-                  <StyledTableRow key={row.uuid}>
+          // sx={{
+          //   zIndex: 1000,
+          //   position: "absolute",
+          //   top: "50%",
+          //   left: moveCreateGroupForm ? "360px" : "50%",
+          //   transform: moveCreateGroupForm
+          //     ? "translate(0, -50%)"
+          //     : "translate(-50%, -50%)",
+          //   backgroundColor: Colors.black,
+          //   minWidth: "400px",
+          //   padding: "20px 20px",
+          //   borderRadius: "8px",
+          //   maxHeight: "100vh",
+          //   overflowY: "auto",
+          //   "&::-webkit-scrollbar": {
+          //     display: "none",
+          //   },
+          // }}
+        >
+          <IconButton
+            edge="start"
+            color="inherit"
+            aria-label="close"
+            onClick={() => handleGroupsModalHide()}
+            sx={{
+              position: "absolute",
+              right: "6px",
+              top: "6px",
+              backgroundColor: Colors.red,
+              borderRadius: "50px",
+              "&:hover": {
+                backgroundColor: Colors.red,
+              },
+            }}
+          >
+            <CloseIcon sx={{ color: Colors.white, fontSize: "16px" }} />
+          </IconButton>
+          <Grid>
+            <h6
+              style={{ color: Colors.blue }}
+              className="py-1 px-1 font-bold text-center mb-2"
+            >
+              Group List
+            </h6>
+            <TableContainer component={Paper} sx={{ borderRadius: 0 }}>
+              <Table
+                sx={{
+                  minWidth: 700,
+                }}
+                aria-label="customized table"
+              >
+                <TableHead>
+                  <TableRow>
                     <StyledTableCell
                       align="left"
                       sx={{
+                        paddingTop: "3px",
+                        paddingBottom: "3px",
                         backgroundColor: `${Colors.black} !important`,
                         color: `${Colors.white} !important`,
                       }}
                     >
-                      {row.name}
+                      Group Name
                     </StyledTableCell>
-
                     <StyledTableCell
                       align="center"
                       sx={{
+                        paddingTop: "3px",
+                        paddingBottom: "3px",
                         backgroundColor: `${Colors.black} !important`,
                         color: `${Colors.white} !important`,
                       }}
                     >
-                      {row.merberCount}
+                      Total Members
                     </StyledTableCell>
 
                     <StyledTableCell
                       align="right"
                       sx={{
+                        paddingTop: "3px",
+                        paddingBottom: "3px",
                         backgroundColor: `${Colors.black} !important`,
                         color: `${Colors.white} !important`,
                       }}
                     >
-                      <Grid
+                      Action
+                    </StyledTableCell>
+                  </TableRow>
+                </TableHead>
+                <TableBody>
+                  {groupInformationData.map((row: any, i) => (
+                    <StyledTableRow key={row.uuid}>
+                      <StyledTableCell
+                        align="left"
                         sx={{
-                          display: "flex",
-                          columnGap: "6px",
-                          justifyContent: "end",
-                          alignItems: "center",
+                          backgroundColor: `${Colors.black} !important`,
+                          color: `${Colors.white} !important`,
                         }}
                       >
-                        <Tooltip title="View Group">
-                          <Button
-                            onClick={() => {
-                              setOpenViewGroupModal(true);
-                              handleSingleGroupInformation(row?.uuid);
-                              setAlertModalOpen(false);
-                            }}
-                            variant="contained"
-                            color="primary"
-                            sx={{
-                              fontSize: "18px",
-                              padding: "3px",
-                              minWidth: 0,
-                              backgroundColor: `${Colors.black} !important`,
-                              color: `${Colors.white} !important`,
-                              "&:hover": {
-                                backgroundColor: Colors.blue,
-                              },
-                            }}
-                          >
-                            <MdOutlineVisibility />
-                          </Button>
-                        </Tooltip>
-                        <Tooltip title="Leave Group">
-                          <Button
-                            onClick={() => {
-                              setGroupId(row?.uuid);
-                              setAlertModalOpen(!alertModalOpen);
-                            }}
-                            variant="contained"
-                            color="primary"
-                            sx={{
-                              fontSize: "18px",
-                              padding: "3px",
-                              minWidth: 0,
-                              backgroundColor: `${Colors.black} !important`,
-                              color: `${Colors.white} !important`,
-                              "&:hover": {
-                                backgroundColor: Colors.blue,
-                              },
-                            }}
-                          >
-                            <HiOutlineUserRemove />
-                          </Button>
-                        </Tooltip>
-                      </Grid>
-                    </StyledTableCell>
-                  </StyledTableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
+                        {row.name}
+                      </StyledTableCell>
+
+                      <StyledTableCell
+                        align="center"
+                        sx={{
+                          backgroundColor: `${Colors.black} !important`,
+                          color: `${Colors.white} !important`,
+                        }}
+                      >
+                        {row.merberCount}
+                      </StyledTableCell>
+
+                      <StyledTableCell
+                        align="right"
+                        sx={{
+                          backgroundColor: `${Colors.black} !important`,
+                          color: `${Colors.white} !important`,
+                        }}
+                      >
+                        <Grid
+                          sx={{
+                            display: "flex",
+                            columnGap: "6px",
+                            justifyContent: "end",
+                            alignItems: "center",
+                          }}
+                        >
+                          <Tooltip title="View Group">
+                            <Button
+                              onClick={() => {
+                                setOpenViewGroupModal(true);
+                                handleSingleGroupInformation(row?.uuid);
+                                setAlertModalOpen(false);
+                              }}
+                              variant="contained"
+                              color="primary"
+                              sx={{
+                                fontSize: "18px",
+                                padding: "3px",
+                                minWidth: 0,
+                                backgroundColor: `${Colors.black} !important`,
+                                color: `${Colors.white} !important`,
+                                "&:hover": {
+                                  backgroundColor: Colors.blue,
+                                },
+                              }}
+                            >
+                              <MdOutlineVisibility />
+                            </Button>
+                          </Tooltip>
+                          <Tooltip title="Leave Group">
+                            <Button
+                              onClick={() => {
+                                setGroupId(row?.uuid);
+                                setAlertModalOpen(!alertModalOpen);
+                              }}
+                              variant="contained"
+                              color="primary"
+                              sx={{
+                                fontSize: "18px",
+                                padding: "3px",
+                                minWidth: 0,
+                                backgroundColor: `${Colors.black} !important`,
+                                color: `${Colors.white} !important`,
+                                "&:hover": {
+                                  backgroundColor: Colors.blue,
+                                },
+                              }}
+                            >
+                              <HiOutlineUserRemove />
+                            </Button>
+                          </Tooltip>
+                        </Grid>
+                      </StyledTableCell>
+                    </StyledTableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </Grid>
         </Grid>
-      </Grid>
+      )}
+
       {/* view group */}
 
       {openViewGroupModal ? (
         <ViewGroup
+          setMainSidebarMenuOpen={setMenuOpen}
+          mapMain={mapMain}
+          clearPreviousAllMarkers={clearPreviousAllMarkers}
+          addCreateFencesNewMarker={addCreateFencesNewMarker}
           singleGroupInformation={singleGroupInformation}
           setOpenViewGroupModal={setOpenViewGroupModal}
           setEditGroupInformation={setEditGroupInformation}
@@ -668,6 +914,15 @@ const GroupManagement = ({
       {/* Create Fences */}
       {openCreateFencesModal ? (
         <CreateFences
+          updateFencesNewMarker={updateFencesNewMarker}
+          fencesLng={fencesLng}
+          setFencesLng={setFencesLng}
+          fencesLat={fencesLat}
+          setFencesLat={setFencesLat}
+          fencesAddress={fencesAddress}
+          setFencesAddress={setFencesAddress}
+          clearCreateFencesNewMarker={clearCreateFencesNewMarker}
+          mapMain={mapMain}
           setOpenViewGroupModal={setOpenViewGroupModal}
           setOpenFencesManagementModal={setOpenFencesManagementModal}
           setOpenCreateFencesModal={setOpenCreateFencesModal}

@@ -51,6 +51,8 @@ export default function Home() {
   const {
     open: placesMenuListModalOpen,
     handleClick: placesMenuListHandleClick,
+    hideCreateFences,
+    setHideCreateFences,
   } = usePlacesMenuListOpenContext();
   const [mapMain, setMapMain] = useState<any>(null);
   const [error, setError] = useState(false);
@@ -143,7 +145,6 @@ export default function Home() {
 
     if (groupIdInfo && status === "authenticated") {
       let group_id = groupIdInfo.replace(/"/g, "");
-
       fetchData(group_id);
     }
   }, [status]);
@@ -477,6 +478,8 @@ export default function Home() {
       {/* Group ManageMent */}
       {groupsModal ? (
         <GroupManagement
+          setMenuOpen={setMenuOpen}
+          mapMain={mapMain}
           moveCreateGroupForm={moveCreateGroupForm}
           groupInformationData={groupInformationData}
           setGroupInformationData={setGroupInformationData}

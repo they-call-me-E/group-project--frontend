@@ -20,8 +20,14 @@ import { PiTelegramLogo } from "react-icons/pi";
 import AlertModal from "../../message/AlertModal";
 import { MdOutlineVisibility } from "react-icons/md";
 import CircularProgress from "@mui/material/CircularProgress";
+import { useUserActionOpenContext } from "../../../context/map/UserActionContext";
+import mapboxgl from "mapbox-gl";
 
 const ViewGroup = ({
+  setMainSidebarMenuOpen,
+  mapMain,
+  clearPreviousAllMarkers,
+  addCreateFencesNewMarker,
   singleGroupInformation,
   setOpenViewGroupModal,
   setEditGroupInformation,
@@ -36,6 +42,10 @@ const ViewGroup = ({
   setOpenCreateFencesModal,
   setOpenFencesManagementModal,
 }: {
+  setMainSidebarMenuOpen: React.Dispatch<React.SetStateAction<any>>;
+  mapMain: mapboxgl.Map | null;
+  clearPreviousAllMarkers: () => void;
+  addCreateFencesNewMarker: (placesData: any, mapInstance: mapboxgl.Map) => any;
   handleGenerateInviteCode: (groupId: string) => void;
   singleGroupInformation: any;
   setOpenViewGroupModal: React.Dispatch<React.SetStateAction<any>>;
@@ -50,6 +60,7 @@ const ViewGroup = ({
   setOpenCreateFencesModal: React.Dispatch<React.SetStateAction<any>>;
   setOpenFencesManagementModal: React.Dispatch<React.SetStateAction<any>>;
 }) => {
+  const { handleGroupsModalWithFencesOpen } = useUserActionOpenContext();
   const [menuOpen, setMenuOpen] = useState(false);
   const [groupId, setGroupId] = useState("");
   const [alertModalOpen, setAlertModalOpen] = useState(false);
@@ -504,9 +515,18 @@ const ViewGroup = ({
                   </Button>
                   <Button
                     onClick={() => {
+                      setMainSidebarMenuOpen(false);
                       setOpenViewGroupModal(false);
                       setOpenCreateFencesModal(true);
                       setEditGroupInformation(singleGroupInformation);
+                      handleGroupsModalWithFencesOpen();
+                      clearPreviousAllMarkers();
+
+                      addCreateFencesNewMarker(
+                        { latitude: 40.7128, longitude: -74.006 },
+                        // @ts-ignore
+                        mapMain
+                      );
                     }}
                     variant="contained"
                     color="primary"

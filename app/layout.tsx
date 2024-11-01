@@ -6,6 +6,7 @@ import { UserActionOpenWrapper } from "./context/map/UserActionContext";
 import { UsersMenuListOpenWrapper } from "./context/map/UsersMenuListContext";
 import { GroupSelectionWrapper } from "./context/map/GroupSelectionContext";
 import { PlacesMenuListOpenWrapper } from "./context/map/PlacesMenuListContext";
+import { MarkerOnMapContextWrapper } from "./context/map/MarkerOnMapContext";
 
 export const metadata: Metadata = {
   title: "GroupTrackr",
@@ -25,7 +26,9 @@ export default function RootLayout({
             <UsersMenuListOpenWrapper>
               <UserActionOpenWrapper>
                 <GroupSelectionWrapper>
-                  <body>{children}</body>
+                  <MarkerOnMapContextWrapper>
+                    <body>{children}</body>
+                  </MarkerOnMapContextWrapper>
                 </GroupSelectionWrapper>
               </UserActionOpenWrapper>
             </UsersMenuListOpenWrapper>

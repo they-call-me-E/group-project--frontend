@@ -23,6 +23,7 @@ const UserActions = () => {
     locationWithStatusModalFormHide,
     handleJoinGroupModalOpen,
     handleJoinGroupModalHide,
+    handleGroupsModalWithFencesHide,
   } = useUserActionOpenContext();
   const [activeButton, setActiveButton] = useState<string>();
   const handleActiveButton = (value: string) => {
@@ -186,6 +187,7 @@ const UserActions = () => {
             createGroupModalFormHide();
             locationWithStatusModalFormHide();
             handleJoinGroupModalHide();
+            handleGroupsModalWithFencesHide();
           }}
         >
           View Groups

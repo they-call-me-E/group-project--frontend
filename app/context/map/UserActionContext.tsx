@@ -16,6 +16,7 @@ export function UserActionOpenWrapper({
     useState(false);
   const [createGroupModalForm, setCreateGroupModalForm] = useState(false);
   const [groupsModal, setGroupsModal] = useState(false);
+  const [groupsModalWithFences, setGroupsModalWithFences] = useState(false);
   const [joinGroupModal, setJoinGroupModal] = useState(false);
   const [profileModal, setProfileModal] = useState(false);
 
@@ -50,8 +51,17 @@ export function UserActionOpenWrapper({
   const handleGroupsModalOpen = () => {
     setGroupsModal(!groupsModal);
   };
+  const handleGroupModalReset = () => {
+    setGroupsModal(false);
+  };
   const handleGroupsModalHide = () => {
     setGroupsModal(false);
+  };
+  const handleGroupsModalWithFencesOpen = () => {
+    setGroupsModalWithFences(true);
+  };
+  const handleGroupsModalWithFencesHide = () => {
+    setGroupsModalWithFences(false);
   };
 
   const handleHide = () => {
@@ -67,6 +77,7 @@ export function UserActionOpenWrapper({
   return (
     <UserActionContext.Provider
       value={{
+        handleGroupModalReset,
         open: state,
         handleClick: handleClick,
         handleHide: handleHide,
@@ -88,6 +99,9 @@ export function UserActionOpenWrapper({
         userProfileModalClick: userProfileModalClick,
         userProfileModalHide: userProfileModalHide,
         profileModal: profileModal,
+        groupsModalWithFences,
+        handleGroupsModalWithFencesOpen,
+        handleGroupsModalWithFencesHide,
       }}
     >
       {children}

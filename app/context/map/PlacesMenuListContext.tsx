@@ -11,6 +11,8 @@ export function PlacesMenuListOpenWrapper({
   children: React.ReactNode;
 }) {
   const [state, setState] = useState<PlacesMenuListOpentype>(false);
+  const [hideCreateFences, setHideCreateFences] = useState(false);
+
   const handleClick = () => {
     setState(!state);
   };
@@ -20,7 +22,13 @@ export function PlacesMenuListOpenWrapper({
 
   return (
     <PlacesMenuListContext.Provider
-      value={{ open: state, handleClick: handleClick, handleHide: handleHide }}
+      value={{
+        open: state,
+        handleClick: handleClick,
+        handleHide: handleHide,
+        hideCreateFences,
+        setHideCreateFences,
+      }}
     >
       {children}
     </PlacesMenuListContext.Provider>
