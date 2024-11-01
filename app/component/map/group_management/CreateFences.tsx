@@ -10,6 +10,7 @@ import { IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import mapboxgl from "mapbox-gl";
 import { useUserActionOpenContext } from "../../../context/map/UserActionContext";
+import { usePlacesMenuListOpenContext } from "../../../context/map/PlacesMenuListContext";
 
 interface FormValues {
   name: string;
@@ -60,6 +61,8 @@ const CreateFences = ({
   setCreateFencesErrorMsg: React.Dispatch<React.SetStateAction<any>>;
   // reFetchGroupListData: () => void;
 }) => {
+  const { refetchDataOnMap, setRefetchDataOnMap } =
+    usePlacesMenuListOpenContext();
   const { handleGroupModalReset } = useUserActionOpenContext();
   const [radiusValue, setRadiusValue] = useState<any>(null);
   const { data: session, status } = useSession();
@@ -137,6 +140,7 @@ const CreateFences = ({
           // setOpenFencesManagementModal(true);
           clearCreateFencesNewMarker();
           handleGroupModalReset();
+          setRefetchDataOnMap(!refetchDataOnMap);
           // reFetchGroupListData();
         }
       } catch (error: any) {
@@ -182,7 +186,8 @@ const CreateFences = ({
           transform: "translate(0, 0)",
           width: {
             xs: "40%",
-            sm: "350px",
+            sm: "30%",
+            md: "350px",
           },
           height: "100dvh",
           backgroundColor: Colors.black,
@@ -195,6 +200,7 @@ const CreateFences = ({
           color="inherit"
           aria-label="close"
           onClick={() => {
+            setRefetchDataOnMap(!refetchDataOnMap);
             clearCreateFencesNewMarker();
             setOpenCreateFencesModal(false);
             handleGroupModalReset();
@@ -222,6 +228,14 @@ const CreateFences = ({
             padding: "3px 0",
             fontWeight: "bold",
             marginBottom: "8px",
+            fontSize: {
+              xs: "14px",
+              sm: "16px",
+            },
+            marginTop: {
+              xs: "16px",
+              sm: "0",
+            },
           }}
           mb={1}
         >
@@ -434,7 +448,7 @@ const CreateFences = ({
             </Box>
           </Grid>
 
-          <Box sx={{ width: 300, padding: 2 }}>
+          <Box sx={{ width: "100%", padding: 2 }}>
             <Slider
               value={radisuRange}
               onChange={handleChange}

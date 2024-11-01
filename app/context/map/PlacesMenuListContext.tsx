@@ -12,6 +12,7 @@ export function PlacesMenuListOpenWrapper({
 }) {
   const [state, setState] = useState<PlacesMenuListOpentype>(false);
   const [hideCreateFences, setHideCreateFences] = useState(false);
+  const [refetchDataOnMap, setRefetchDataOnMap] = useState(false);
 
   const handleClick = () => {
     setState(!state);
@@ -23,6 +24,8 @@ export function PlacesMenuListOpenWrapper({
   return (
     <PlacesMenuListContext.Provider
       value={{
+        refetchDataOnMap,
+        setRefetchDataOnMap,
         open: state,
         handleClick: handleClick,
         handleHide: handleHide,

@@ -41,7 +41,7 @@ const Map = ({
     placesMarkersArray,
     setPlacesMarkersArray,
   } = useMarkerOnMapContext();
-  const { hideCreateFences } = usePlacesMenuListOpenContext();
+  const { hideCreateFences, refetchDataOnMap } = usePlacesMenuListOpenContext();
 
   // const [markersArray, setMarkersArray] = useState<any[]>([]);
   // const [placesMarkersArray, setPlacesMarkersArray] = useState<any[]>([]);
@@ -591,7 +591,13 @@ const Map = ({
         addMember(item, mapMain);
       });
     }
-  }, [groupId, locationWithStatusSuccess, editProfileSuccess, mapMain]);
+  }, [
+    groupId,
+    locationWithStatusSuccess,
+    editProfileSuccess,
+    mapMain,
+    refetchDataOnMap,
+  ]);
 
   return (
     <>
