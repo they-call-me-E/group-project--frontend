@@ -1,7 +1,7 @@
 "use client";
 import Grid from "@mui/material/Grid2";
 import { Colors } from "../../theme/colors";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { styled } from "@mui/material/styles";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -99,6 +99,7 @@ const GroupManagement = ({
   setGroupInformationData: React.Dispatch<React.SetStateAction<any>>;
   reFetchGroupListData: () => void;
 }) => {
+  const createFencesMapCircleRef = useRef<HTMLDivElement | null>(null);
   const { handleGroupsModalHide, groupsModalWithFences } =
     useUserActionOpenContext();
   const { data: session, status }: { data: any; status: any } = useSession();
@@ -174,9 +175,7 @@ const GroupManagement = ({
     // removePreMarkers code start
     markersArray.forEach((marker: any) => marker.remove());
     setMarkersArray([]);
-    // removePreMarkers code end
     setPlacesMarkersArray([]);
-    //  setHideCreateFences(!hideCreateFences);
   };
 
   const addCreateFencesNewMarker = (
@@ -184,127 +183,24 @@ const GroupManagement = ({
     mapInstance: mapboxgl.Map
   ) => {
     let { latitude, longitude } = placesData;
+    if (!mapInstance) return;
+    const map = mapInstance;
 
-    const sourceId = `circle-${latitude}-${longitude}`;
-    const layerId = `circle-layer-${latitude}-${longitude}`;
-
-    // Create a circle marker
-    const circleMarker: any = {
-      type: "Feature",
-      geometry: {
-        type: "Point",
-        coordinates: [longitude, latitude],
-      },
-    };
-
-    // Check if the source already exists
-    if (!mapInstance.getSource(sourceId)) {
-      // Add source for the circle
-      mapInstance.addSource(sourceId, {
-        type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: [circleMarker],
-        },
-      });
-
-      // Add a circle layer
-      mapInstance.addLayer({
-        id: `circle-layer-${latitude}-${longitude}`,
-        type: "circle",
-        source: `circle-${latitude}-${longitude}`,
-        paint: {
-          "circle-radius": [
-            "interpolate",
-            ["linear"],
-            ["zoom"],
-            5,
-            30,
-            10,
-            80,
-            15,
-            120,
-          ],
-          "circle-color": Colors.blue,
-          "circle-opacity": 0.2,
-        },
-      });
-    } else {
-      // Update the existing source if necessary
-      const source = mapInstance.getSource(sourceId) as mapboxgl.GeoJSONSource;
-      source.setData({
-        type: "FeatureCollection",
-        features: [circleMarker],
-      });
-    }
-
-    // Create the marker element with a custom SVG icon
-
-    const markerElement = document.createElement("div");
-    markerElement.innerHTML = `
-        <div class="places_icon_parent">
-             <svg display="block" height="41px" width="27px" viewBox="0 0 27 41">
-            <g fillRule="nonzero">
-                <g transform="translate(3.0, 29.0)" fill="#000000">
-                    <ellipse opacity="0.04" cx="10.5" cy="5.80029008" rx="10.5" ry="5.25002273"></ellipse>
-                </g>
-                <g fill="#3FB1CE">
-                    <path d="M27,13.5 C27,19.074644 20.250001,27.000002 14.75,34.500002 C14.016665,35.500004 12.983335,35.500004 12.25,34.500002 C6.7499993,27.000002 0,19.222562 0,13.5 C0,6.0441559 6.0441559,0 13.5,0 C20.955844,0 27,6.0441559 27,13.5 Z"></path>
-                </g>
-                <g opacity="0.25" fill="#000000">
-                    <path d="M13.5,0 C6.0441559,0 0,6.0441559 0,13.5 C0,19.222562 6.7499993,27 12.25,34.5 C13,35.522727 14.016664,35.500004 14.75,34.5 C20.250001,27 27,19.074644 27,13.5 C27,6.0441559 20.955844,0 13.5,0 Z"></path>
-                </g>
-                <g transform="translate(6.0, 7.0)" fill="#FFFFFF"></g>
-                <g transform="translate(8.0, 8.0)">
-                    <circle fill="#000000" opacity="0.25" cx="5.5" cy="5.5" r="5.4999962"></circle>
-                    <circle fill="#FFFFFF" cx="5.5" cy="5.5" r="5.4999962"></circle>
-                </g>
-            </g>
-        </svg>
-        </div>
-      `;
-
-    const marker = new mapboxgl.Marker({
-      draggable: true,
-      element: markerElement,
+    map.on("moveend", () => {
+      const center = map?.getCenter();
+      if (center) {
+        const [lng, lat] = map.getCenter()?.toArray();
+        setFencesLng(lng);
+        setFencesLat(lat);
+        getAddressFromCoordinates(lat, lng)
+          .then((res) => {
+            setFencesAddress(res);
+          })
+          .catch((error) => {
+            // setFencesAddressError()
+          });
+      }
     });
-    if (longitude && latitude) {
-      marker.setLngLat([longitude, latitude]).addTo(mapInstance);
-    }
-
-    marker.on("drag", () => {
-      const { lng, lat } = marker.getLngLat();
-
-      // Update the circle's position
-      const NewCircleMarker: any = {
-        type: "Feature",
-        geometry: {
-          type: "Point",
-          coordinates: [lng, lat],
-        },
-      };
-      const source = mapInstance.getSource(sourceId) as mapboxgl.GeoJSONSource;
-      source.setData({
-        type: "FeatureCollection",
-        features: [NewCircleMarker],
-      });
-    });
-    marker.on("dragend", () => {
-      const { lng, lat } = marker.getLngLat();
-      setFencesLng(lng);
-      setFencesLat(lat);
-      getAddressFromCoordinates(lat, lng)
-        .then((res) => {
-          setFencesAddress(res);
-        })
-        .catch((error) => {
-          // setFencesAddressError()
-        });
-    });
-
-    // Return the marker for later reference
-    setCreateFencesMarkersArray((prevMarkers: any) => [...prevMarkers, marker]);
-    return marker;
   };
   const clearCreateFencesNewMarker = () => {
     createFencesMarkersArray.forEach((marker: any) => {
@@ -312,8 +208,6 @@ const GroupManagement = ({
       let prevLatitude = 40.7128;
       let prevLongitude = -74.006;
       const [longitude, latitude] = marker.getLngLat().toArray();
-      // const sourceId = `circle-${latitude}-${longitude}`;
-      // const layerId = `circle-layer-${latitude}-${longitude}`;
       const sourceId = `circle-${prevLatitude}-${prevLongitude}`;
       const layerId = `circle-layer-${prevLatitude}-${prevLongitude}`;
 
@@ -333,37 +227,9 @@ const GroupManagement = ({
     mapInstance: mapboxgl.Map,
     radiusValue: number
   ) => {
-    let prevLatitude = 40.7128;
-    let prevLongitude = -74.006;
-    let { latitude, longitude } = placesData;
-    const circleRadius = radiusValue;
-    const prevSourceId = `circle-${prevLatitude}-${prevLongitude}`;
-    const prevLayerId = `circle-layer-${prevLatitude}-${prevLongitude}`;
-    const circleMarker: any = {
-      type: "Feature",
-      geometry: {
-        type: "Point",
-        coordinates: [longitude, latitude],
-      },
-    };
-    if (!mapInstance.getSource(prevSourceId)) {
-    } else {
-      // If the source exists, update its data
-      const source = mapInstance.getSource(
-        prevSourceId
-      ) as mapboxgl.GeoJSONSource;
-      source.setData({
-        type: "FeatureCollection",
-        features: [circleMarker],
-      });
-      // If the layer exists, update its paint properties (like circle radius)
-      if (mapInstance.getLayer(prevLayerId)) {
-        mapInstance.setPaintProperty(
-          prevLayerId,
-          "circle-radius",
-          circleRadius
-        );
-      }
+    if (createFencesMapCircleRef.current) {
+      createFencesMapCircleRef.current.style.width = `${radiusValue}px`;
+      createFencesMapCircleRef.current.style.height = `${radiusValue}px`;
     }
   };
 
@@ -564,25 +430,6 @@ const GroupManagement = ({
               display: "none",
             },
           }}
-
-          // sx={{
-          //   zIndex: 1000,
-          //   position: "absolute",
-          //   top: "50%",
-          //   left: moveCreateGroupForm ? "360px" : "50%",
-          //   transform: moveCreateGroupForm
-          //     ? "translate(0, -50%)"
-          //     : "translate(-50%, -50%)",
-          //   backgroundColor: Colors.black,
-          //   minWidth: "400px",
-          //   padding: "20px 20px",
-          //   borderRadius: "8px",
-          //   maxHeight: "100vh",
-          //   overflowY: "auto",
-          //   "&::-webkit-scrollbar": {
-          //     display: "none",
-          //   },
-          // }}
         >
           <IconButton
             edge="start"
@@ -914,6 +761,7 @@ const GroupManagement = ({
       {/* Create Fences */}
       {openCreateFencesModal ? (
         <CreateFences
+          createFencesMapCircleRef={createFencesMapCircleRef}
           updateFencesNewMarker={updateFencesNewMarker}
           fencesLng={fencesLng}
           setFencesLng={setFencesLng}
@@ -923,8 +771,6 @@ const GroupManagement = ({
           setFencesAddress={setFencesAddress}
           clearCreateFencesNewMarker={clearCreateFencesNewMarker}
           mapMain={mapMain}
-          setOpenViewGroupModal={setOpenViewGroupModal}
-          setOpenFencesManagementModal={setOpenFencesManagementModal}
           setOpenCreateFencesModal={setOpenCreateFencesModal}
           editGroupInformation={editGroupInformation}
           setCreateFencesSuccess={setCreateFencesSuccess}

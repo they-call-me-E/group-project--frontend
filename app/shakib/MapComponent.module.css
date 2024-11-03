@@ -1,0 +1,28 @@
+/* Map container styling */
+.mapContainer {
+  width: 500px;
+  height: 500px;
+  position: relative;
+}
+
+/* Centered location icon */
+.locationIcon {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Address display styling */
+.addressDisplay {
+  margin-top: 20px;
+  text-align: center;
+}
+
+/* Radius slider styling */
+.sliderContainer {
+  margin-top: 20px;
+  width: 80%;
+}

@@ -244,30 +244,6 @@ const Map = ({
     return popupContent;
   };
 
-  // Function to remove previous markers from the map
-  // const removePreviousMarkers = (mapInstance: mapboxgl.Map) => {
-  //   placesMarkersArray.forEach((marker: any) => {
-  //     marker.remove();
-
-  //     const [longitude, latitude] = marker.getLngLat().toArray();
-  //     const sourceId = `circle-${latitude}-${longitude}`;
-  //     const layerId = `circle-layer-${latitude}-${longitude}`;
-
-  //     if (mapInstance?.getLayer(layerId)) {
-  //       mapInstance?.removeLayer(layerId);
-  //     }
-  //     if (mapInstance?.getSource(sourceId)) {
-  //       mapInstance?.removeSource(sourceId);
-  //     }
-  //   });
-  //   // removePreMarkers code start
-
-  //   markersArray.forEach((marker: any) => marker.remove());
-  //   setMarkersArray([]);
-  //   // removePreMarkers code end
-  //   setPlacesMarkersArray([]);
-  // };
-
   const removePreviousUsersMarkers = (mapInstance: mapboxgl.Map) => {
     markersArray.forEach((marker: any) => marker.remove());
     setMarkersArray([]);
@@ -488,7 +464,7 @@ const Map = ({
         container: mapContainerRef.current,
         style: "mapbox://styles/mapbox/dark-v10",
         zoom: 8,
-        center: [-82.04842360357094, 35.18969231143789],
+        center: [-74.006, 40.7128],
         // showLogo: false,
       });
 

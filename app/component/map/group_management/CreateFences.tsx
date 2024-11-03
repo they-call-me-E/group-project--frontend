@@ -8,9 +8,10 @@ import { useSession } from "next-auth/react";
 import { TextField, Box, Button, Typography, Slider } from "@mui/material";
 import { IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import mapboxgl from "mapbox-gl";
 import { useUserActionOpenContext } from "../../../context/map/UserActionContext";
 import { usePlacesMenuListOpenContext } from "../../../context/map/PlacesMenuListContext";
+import { getCoordinatesFromAddress } from "./../../../utils/getCoordinatesFromAddress";
+import { IoSearchSharp } from "react-icons/io5";
 
 interface FormValues {
   name: string;
@@ -21,6 +22,7 @@ interface FormValues {
 }
 
 const CreateFences = ({
+  createFencesMapCircleRef,
   updateFencesNewMarker,
   fencesLng,
   setFencesLng,
@@ -30,15 +32,13 @@ const CreateFences = ({
   setFencesAddress,
   clearCreateFencesNewMarker,
   mapMain,
-  setOpenViewGroupModal,
-  setOpenFencesManagementModal,
   setOpenCreateFencesModal,
   editGroupInformation,
   setCreateFencesSuccess,
   setCreateFenceserror,
   setCreateFencesErrorMsg,
-}: // reFetchGroupListData,
-{
+}: {
+  createFencesMapCircleRef: React.RefObject<HTMLDivElement>;
   updateFencesNewMarker: (
     placesData: any,
     mapInstance: mapboxgl.Map,
@@ -52,8 +52,6 @@ const CreateFences = ({
   fencesAddress: string;
   setFencesAddress: React.Dispatch<React.SetStateAction<string>>;
   mapMain: mapboxgl.Map | null;
-  setOpenViewGroupModal: React.Dispatch<React.SetStateAction<any>>;
-  setOpenFencesManagementModal: React.Dispatch<React.SetStateAction<any>>;
   setOpenCreateFencesModal: React.Dispatch<React.SetStateAction<any>>;
   editGroupInformation: any;
   setCreateFencesSuccess: React.Dispatch<React.SetStateAction<any>>;
@@ -137,11 +135,9 @@ const CreateFences = ({
         if (response?.data?.document) {
           setOpenCreateFencesModal(false);
           setCreateFencesSuccess(true);
-          // setOpenFencesManagementModal(true);
           clearCreateFencesNewMarker();
           handleGroupModalReset();
           setRefetchDataOnMap(!refetchDataOnMap);
-          // reFetchGroupListData();
         }
       } catch (error: any) {
         if (error?.response?.data?.message) {
@@ -165,6 +161,7 @@ const CreateFences = ({
     const rangeValue = newValue as number[];
     setRadiusValue(rangeValue[0]);
     setRadiusRange(rangeValue);
+
     if (fencesLat && fencesLng) {
       updateFencesNewMarker(
         { latitude: fencesLat, longitude: fencesLng },
@@ -174,9 +171,84 @@ const CreateFences = ({
       );
     }
   };
+  // flytoLocation function
+
+  const flytoLocation = (longitude: any, latitude: any) => {
+    if (mapMain) {
+      mapMain.flyTo({
+        center: [longitude, latitude],
+        zoom: 12,
+        essential: true,
+      });
+    }
+  };
 
   return (
     <>
+      <div
+        style={{
+          position: "absolute",
+          top: "50%",
+          left: "50%",
+          transform: "translate(-50%, -50%)",
+          zIndex: 1000,
+          pointerEvents: "none",
+        }}
+      >
+        <div
+          style={{
+            position: "relative",
+          }}
+        >
+          <div
+            ref={createFencesMapCircleRef}
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: "50%",
+              transform: "translate(-50%, -50%)",
+              zIndex: 1000,
+              pointerEvents: "none",
+              width: "100px",
+              height: "100px",
+              borderRadius: "100%",
+              backgroundColor: Colors.blue,
+              opacity: 0.2,
+            }}
+          ></div>
+          <svg display="block" height="41px" width="27px" viewBox="0 0 27 41">
+            <g fillRule="nonzero">
+              <g transform="translate(3.0, 29.0)" fill="#000000">
+                <ellipse
+                  opacity="0.04"
+                  cx="10.5"
+                  cy="5.80029008"
+                  rx="10.5"
+                  ry="5.25002273"
+                ></ellipse>
+              </g>
+              <g fill="#3FB1CE">
+                <path d="M27,13.5 C27,19.074644 20.250001,27.000002 14.75,34.500002 C14.016665,35.500004 12.983335,35.500004 12.25,34.500002 C6.7499993,27.000002 0,19.222562 0,13.5 C0,6.0441559 6.0441559,0 13.5,0 C20.955844,0 27,6.0441559 27,13.5 Z"></path>
+              </g>
+              <g opacity="0.25" fill="#000000">
+                <path d="M13.5,0 C6.0441559,0 0,6.0441559 0,13.5 C0,19.222562 6.7499993,27 12.25,34.5 C13,35.522727 14.016664,35.500004 14.75,34.5 C20.250001,27 27,19.074644 27,13.5 C27,6.0441559 20.955844,0 13.5,0 Z"></path>
+              </g>
+              <g transform="translate(6.0, 7.0)" fill="#FFFFFF"></g>
+              <g transform="translate(8.0, 8.0)">
+                <circle
+                  fill="#000000"
+                  opacity="0.25"
+                  cx="5.5"
+                  cy="5.5"
+                  r="5.4999962"
+                ></circle>
+                <circle fill="#FFFFFF" cx="5.5" cy="5.5" r="5.4999962"></circle>
+              </g>
+            </g>
+          </svg>
+        </div>
+      </div>
+
       <Grid
         sx={{
           zIndex: 1000,
@@ -295,27 +367,74 @@ const CreateFences = ({
               >
                 Address
               </Typography>
-
-              <TextField
-                fullWidth
-                placeholder="Address"
-                name="address"
-                value={formik.values.address}
-                onChange={formik.handleChange}
-                onBlur={formik.handleBlur}
-                error={formik.touched.address && Boolean(formik.errors.address)}
-                helperText={formik.touched.address && formik.errors.address}
-                sx={{
-                  "& .MuiInputBase-input": {
-                    paddingTop: "8px",
-                    paddingBottom: "8px",
+              <Grid sx={{ display: "flex", position: "relative" }}>
+                <Button
+                  onClick={() => {
+                    if (fencesAddress) {
+                      getCoordinatesFromAddress(fencesAddress?.trim())
+                        .then((res) => {
+                          setFencesLat(
+                            res?.latitude ? parseFloat(res?.latitude) : null
+                          );
+                          setFencesLng(
+                            res?.longitude ? parseFloat(res?.longitude) : null
+                          );
+                          flytoLocation(
+                            parseFloat(res?.longitude),
+                            parseFloat(res?.latitude)
+                          );
+                        })
+                        .catch((error) => {
+                          console.log("Hello i am error sir ");
+                          console.log(error);
+                        });
+                    }
+                  }}
+                  type="button"
+                  variant="contained"
+                  sx={{
+                    zIndex: 1000,
+                    padding: 0,
+                    minWidth: "24px",
                     backgroundColor: "transparent",
-                  },
-                  "&.Mui-focused": {
-                    backgroundColor: "transparent",
-                  },
-                }}
-              />
+                    display: "flex",
+                    alignItems: "center",
+                    position: "absolute",
+                    top: "50%",
+                    right: "6px",
+                    transform: "translate(0, -50%)",
+                  }}
+                >
+                  <IoSearchSharp className="text-[#fff] text-[24px] opacity-[0.8]" />
+                </Button>
+                <TextField
+                  fullWidth
+                  placeholder="Address"
+                  name="address"
+                  value={formik.values.address}
+                  onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
+                    const value = event.target.value;
+                    formik.handleChange(event);
+                    setFencesAddress(value ? value : "");
+                  }}
+                  onBlur={formik.handleBlur}
+                  error={
+                    formik.touched.address && Boolean(formik.errors.address)
+                  }
+                  helperText={formik.touched.address && formik.errors.address}
+                  sx={{
+                    "& .MuiInputBase-input": {
+                      paddingTop: "8px",
+                      paddingBottom: "8px",
+                      backgroundColor: "transparent",
+                      paddingRight: "32px",
+                    },
+                    "&.Mui-focused": {
+                      backgroundColor: "transparent",
+                    },
+                  }}
+                />
+              </Grid>
             </Box>
             {/* Latitude */}
             <Box mb={2}>
@@ -342,8 +461,14 @@ const CreateFences = ({
                 value={formik.values.latitude}
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                   const value = event.target.value;
-                  formik.handleChange(event); // Update Formik state
-                  setFencesLat(value ? parseFloat(value) : null); // Update local state
+                  formik.handleChange(event);
+
+                  // if (parseFloat(value) > -90 && parseFloat(value) < 90) {
+                  //   setFencesLat(value ? parseFloat(value) : null);
+                  //   if (fencesLng) {
+                  //     flytoLocation(fencesLng, parseFloat(value));
+                  //   }
+                  // }
                 }}
                 onBlur={formik.handleBlur}
                 error={
@@ -388,7 +513,13 @@ const CreateFences = ({
                 onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
                   const value = event.target.value;
                   formik.handleChange(event); // Update Formik state
-                  setFencesLng(value ? parseFloat(value) : null); // Update local state
+
+                  // if (parseFloat(value) > -180 && parseFloat(value) < 180) {
+                  //   setFencesLng(value ? parseFloat(value) : null); // Update local state
+                  //   if (fencesLat) {
+                  //     flytoLocation(parseFloat(value), fencesLat);
+                  //   }
+                  // }
                 }}
                 onBlur={formik.handleBlur}
                 error={
