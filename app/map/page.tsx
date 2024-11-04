@@ -51,8 +51,7 @@ export default function Home() {
   const {
     open: placesMenuListModalOpen,
     handleClick: placesMenuListHandleClick,
-    hideCreateFences,
-    setHideCreateFences,
+    refetchDataOnMap,
   } = usePlacesMenuListOpenContext();
   const [mapMain, setMapMain] = useState<any>(null);
   const [error, setError] = useState(false);
@@ -147,7 +146,7 @@ export default function Home() {
       let group_id = groupIdInfo.replace(/"/g, "");
       fetchData(group_id);
     }
-  }, [status]);
+  }, [status, refetchDataOnMap]);
   // If user is authenticated and any group is selected then this useEffect hook will be execute  code end
   const reFetchGroupListData = () => {
     // @ts-ignore

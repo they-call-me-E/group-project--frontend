@@ -393,11 +393,11 @@ const Map = ({
             ["linear"],
             ["zoom"],
             5,
-            30,
+            placesData?.radius * 0.15,
             10,
-            80,
+            placesData?.radius * 0.4,
             15,
-            120,
+            placesData?.radius * 0.6,
           ],
           "circle-color": Colors.blue,
           "circle-opacity": 0.2,
@@ -494,6 +494,7 @@ const Map = ({
               fences: true,
               id: place?.uuid,
               name: place?.name,
+              radius: place?.radius,
               location: {
                 latitude: place?.latitude,
                 longitude: place?.longitude,
@@ -560,6 +561,7 @@ const Map = ({
       // removePreviousMarkers(mapMain);
       removePreviousUsersMarkers(mapMain);
       removePreviousPlacesMarkers(mapMain);
+
       placesData.forEach(function (item) {
         addPlaces(item, mapMain);
       });
@@ -572,7 +574,7 @@ const Map = ({
     locationWithStatusSuccess,
     editProfileSuccess,
     mapMain,
-    refetchDataOnMap,
+    placesList,
   ]);
 
   return (

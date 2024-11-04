@@ -81,14 +81,15 @@ const CreateFences = ({
         .typeError("Must be a number")
         .min(-90, "Latitude must be between -90 and 90")
         .max(90, "Latitude must be between -90 and 90")
-        .nullable()
-        .notRequired(),
+        .required("Latitude is required"),
       longitude: Yup.number()
         .typeError("Must be a number")
         .min(-180, "Longitude must be between -180 and 180")
         .max(180, "Longitude must be between -180 and 180")
-        .nullable()
-        .notRequired(),
+        .required("Longitude is required"),
+      radius: Yup.number()
+        .typeError("Must be a number")
+        .required("Radius is required"),
     }),
     onSubmit: async (
       values: FormValues,
@@ -209,8 +210,8 @@ const CreateFences = ({
               transform: "translate(-50%, -50%)",
               zIndex: 1000,
               pointerEvents: "none",
-              width: "100px",
-              height: "100px",
+              width: "0px",
+              height: "0px",
               borderRadius: "100%",
               backgroundColor: Colors.blue,
               opacity: 0.2,
@@ -251,6 +252,7 @@ const CreateFences = ({
 
       <Grid
         sx={{
+          overflowY: "auto",
           zIndex: 1000,
           position: "absolute",
           top: 0,
@@ -581,7 +583,7 @@ const CreateFences = ({
 
           <Box sx={{ width: "100%", padding: 2 }}>
             <Slider
-              value={radisuRange}
+              value={[radisuRange[0]]}
               onChange={handleChange}
               valueLabelDisplay="auto"
               min={0}
@@ -598,6 +600,7 @@ const CreateFences = ({
                 },
                 "& .MuiSlider-track": {
                   backgroundColor: Colors.blue,
+                  width: `${(radisuRange[0] / 400) * 100}%`,
                 },
                 "& .MuiSlider-rail": {
                   backgroundColor: Colors.blue,
