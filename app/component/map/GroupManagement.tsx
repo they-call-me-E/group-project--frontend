@@ -85,6 +85,7 @@ function createData(
 }
 
 const GroupManagement = ({
+  moveEditProfileForm,
   setMenuOpen,
   mapMain,
   moveCreateGroupForm,
@@ -92,6 +93,7 @@ const GroupManagement = ({
   setGroupInformationData,
   reFetchGroupListData,
 }: {
+  moveEditProfileForm: any;
   setMenuOpen: React.Dispatch<React.SetStateAction<any>>;
   mapMain: mapboxgl.Map | null;
   moveCreateGroupForm: any;
@@ -100,6 +102,7 @@ const GroupManagement = ({
   reFetchGroupListData: () => void;
 }) => {
   const createFencesMapCircleRef = useRef<HTMLDivElement | null>(null);
+  const editFencesMapCircleRef = useRef<HTMLDivElement | null>(null);
   const { handleGroupsModalHide, groupsModalWithFences } =
     useUserActionOpenContext();
   const { data: session, status }: { data: any; status: any } = useSession();
@@ -146,6 +149,9 @@ const GroupManagement = ({
   const [fencesLng, setFencesLng] = useState<any>(null);
   const [fencesLat, setFencesLat] = useState<any>(null);
   const [fencesAddress, setFencesAddress] = useState<string>("");
+  const [editFencesLng, setEditFencesLng] = useState<any>(null);
+  const [editFencesLat, setEditFencesLat] = useState<any>(null);
+  const [editFencesAddress, setEditFencesAddress] = useState<string>("");
 
   const {
     markersArray,
@@ -230,6 +236,40 @@ const GroupManagement = ({
     if (createFencesMapCircleRef.current) {
       createFencesMapCircleRef.current.style.width = `${radiusValue}px`;
       createFencesMapCircleRef.current.style.height = `${radiusValue}px`;
+    }
+  };
+
+  const addUpdateFencesNewMarker = (
+    placesData: any,
+    mapInstance: mapboxgl.Map
+  ) => {
+    if (!mapInstance) return;
+    const map = mapInstance;
+
+    map.on("moveend", () => {
+      const center = map?.getCenter();
+      if (center) {
+        const [lng, lat] = map.getCenter()?.toArray();
+        setEditFencesLng(lng);
+        setEditFencesLat(lat);
+        getAddressFromCoordinates(lat, lng)
+          .then((res) => {
+            setEditFencesAddress(res);
+          })
+          .catch((error) => {
+            // setFencesAddressError()
+          });
+      }
+    });
+  };
+  const editFencesNewCircle = (
+    placesData: any,
+    mapInstance: mapboxgl.Map,
+    radiusValue: number
+  ) => {
+    if (editFencesMapCircleRef.current) {
+      editFencesMapCircleRef.current.style.width = `${radiusValue}px`;
+      editFencesMapCircleRef.current.style.height = `${radiusValue}px`;
     }
   };
 
@@ -404,13 +444,14 @@ const GroupManagement = ({
             top: "50%",
             left: {
               xs: "50%",
-              md: moveCreateGroupForm ? "360px" : "50%",
+              md: moveCreateGroupForm || moveEditProfileForm ? "360px" : "50%",
             },
             transform: {
               xs: "translate(-50%, -50%)",
-              md: moveCreateGroupForm
-                ? "translate(0, -50%)"
-                : "translate(-50%, -50%)",
+              md:
+                moveCreateGroupForm || moveEditProfileForm
+                  ? "translate(0, -50%)"
+                  : "translate(-50%, -50%)",
             },
             backgroundColor: Colors.black,
             minWidth: {
@@ -808,6 +849,10 @@ const GroupManagement = ({
       {/* View Fences */}
       {openViewFencesModal ? (
         <ViewFences
+          addUpdateFencesNewMarker={addUpdateFencesNewMarker}
+          mapMain={mapMain}
+          clearPreviousAllMarkers={clearPreviousAllMarkers}
+          setMainSidebarMenuOpen={setMenuOpen}
           setOpenFencesManagementModal={setOpenFencesManagementModal}
           setOpenEditFencesModal={setOpenEditFencesModal}
           setOpenViewFencesModal={setOpenViewFencesModal}
@@ -820,6 +865,15 @@ const GroupManagement = ({
       {/* Edit Fences */}
       {openEditFencesModal ? (
         <EditFences
+          mapMain={mapMain}
+          editFencesNewCircle={editFencesNewCircle}
+          fencesLng={editFencesLng}
+          setFencesLng={setEditFencesLng}
+          fencesLat={editFencesLat}
+          setFencesLat={setEditFencesLat}
+          fencesAddress={editFencesAddress}
+          setFencesAddress={setEditFencesAddress}
+          editFencesMapCircleRef={editFencesMapCircleRef}
           setOpenViewFencesModal={setOpenViewFencesModal}
           setOpenFencesManagementModal={setOpenFencesManagementModal}
           setOpenEditFencesModal={setOpenEditFencesModal}

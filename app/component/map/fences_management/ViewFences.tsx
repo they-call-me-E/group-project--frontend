@@ -13,20 +13,30 @@ import AlertModal from "../../message/AlertModal";
 import { MdOutlineDelete } from "react-icons/md";
 import axios from "axios";
 import { IoMdArrowRoundBack } from "react-icons/io";
+import { useUserActionOpenContext } from "../../../context/map/UserActionContext";
 
 const ViewFences = ({
+  addUpdateFencesNewMarker,
+  mapMain,
+  clearPreviousAllMarkers,
+  setMainSidebarMenuOpen,
   setOpenEditFencesModal,
   setOpenViewFencesModal,
   singleFences,
   singleGroupInformation,
   setOpenFencesManagementModal,
 }: {
+  addUpdateFencesNewMarker: (placesData: any, mapInstance: mapboxgl.Map) => any;
+  mapMain: mapboxgl.Map | null;
+  clearPreviousAllMarkers: () => void;
+  setMainSidebarMenuOpen: React.Dispatch<React.SetStateAction<any>>;
   setOpenEditFencesModal: React.Dispatch<React.SetStateAction<any>>;
   setOpenViewFencesModal: React.Dispatch<React.SetStateAction<any>>;
   singleFences: any;
   singleGroupInformation: any;
   setOpenFencesManagementModal: React.Dispatch<React.SetStateAction<any>>;
 }) => {
+  const { handleGroupsModalWithFencesOpen } = useUserActionOpenContext();
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: session, status } = useSession();
   const [alertModalOpen, setAlertModalOpen] = useState(false);
@@ -214,9 +224,18 @@ const ViewFences = ({
                 >
                   <Button
                     onClick={() => {
+                      clearPreviousAllMarkers();
+                      handleGroupsModalWithFencesOpen();
+                      setMainSidebarMenuOpen(false);
                       setOpenEditFencesModal(true);
                       setOpenViewFencesModal(false);
                       //setEditGroupInformation(singleGroupInformation);
+
+                      addUpdateFencesNewMarker(
+                        { latitude: 40.7128, longitude: -74.006 },
+                        // @ts-ignore
+                        mapMain
+                      );
                     }}
                     variant="contained"
                     color="primary"
@@ -252,7 +271,7 @@ const ViewFences = ({
                   <Button
                     onClick={() => {
                       // handleDeleteGroup(singleGroupInformation?.uuid);
-                      // setOpenViewGroupModal(false);
+
                       setGroupId(singleGroupInformation?.uuid);
                       setFencesId(singleFences?.uuid);
                       setAlertModalOpen(!alertModalOpen);

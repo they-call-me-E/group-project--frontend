@@ -92,10 +92,15 @@ const FencesManagement = ({
   //         display: "flex",
   //         justifyContent: "center",
   //         alignItems: "center",
-  //         height: "100vh",
+  //         height: "100dvh",
+  //         zIndex: 1000,
+  //         position: "absolute",
+  //         width: "100dvw",
+  //         backgroundColor: Colors.white,
+  //         opacity: 0.5,
   //       }}
   //     >
-  //       <CircularProgress sx={{ color: Colors.red }} size={100} />
+  //       <CircularProgress sx={{ color: Colors.red, zIndex: 1000 }} size={100} />
   //     </Grid>
   //   );
   // }

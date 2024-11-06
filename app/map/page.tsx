@@ -88,8 +88,10 @@ export default function Home() {
 
   const handleMenuToggle = () => {
     setMenuOpen(!menuOpen);
-    setMoveEditProfileForm(!moveEditProfileForm);
-    setMoveCreateGroupForm(!moveCreateGroupForm);
+    // setMoveEditProfileForm(!moveEditProfileForm);
+    // setMoveCreateGroupForm(!moveCreateGroupForm);
+    setMoveEditProfileForm(true);
+    setMoveCreateGroupForm(true);
     setMoveLocationWithStatusForm(!moveLocationWithStatusForm);
   };
 
@@ -477,6 +479,7 @@ export default function Home() {
       {/* Group ManageMent */}
       {groupsModal ? (
         <GroupManagement
+          moveEditProfileForm={moveEditProfileForm}
           setMenuOpen={setMenuOpen}
           mapMain={mapMain}
           moveCreateGroupForm={moveCreateGroupForm}

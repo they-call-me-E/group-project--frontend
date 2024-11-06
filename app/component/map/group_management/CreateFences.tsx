@@ -386,10 +386,7 @@ const CreateFences = ({
                             parseFloat(res?.latitude)
                           );
                         })
-                        .catch((error) => {
-                          console.log("Hello i am error sir ");
-                          console.log(error);
-                        });
+                        .catch((error) => {});
                     }
                   }}
                   type="button"
