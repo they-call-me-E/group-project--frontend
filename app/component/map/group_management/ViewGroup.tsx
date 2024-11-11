@@ -45,7 +45,11 @@ const ViewGroup = ({
   setMainSidebarMenuOpen: React.Dispatch<React.SetStateAction<any>>;
   mapMain: mapboxgl.Map | null;
   clearPreviousAllMarkers: () => void;
-  addCreateFencesNewMarker: (placesData: any, mapInstance: mapboxgl.Map) => any;
+  addCreateFencesNewMarker: (
+    placesData: any,
+    mapInstance: mapboxgl.Map,
+    display: false
+  ) => any;
   handleGenerateInviteCode: (groupId: string) => void;
   singleGroupInformation: any;
   setOpenViewGroupModal: React.Dispatch<React.SetStateAction<any>>;
@@ -525,7 +529,8 @@ const ViewGroup = ({
                       addCreateFencesNewMarker(
                         { latitude: 40.7128, longitude: -74.006 },
                         // @ts-ignore
-                        mapMain
+                        mapMain,
+                        false
                       );
                     }}
                     variant="contained"

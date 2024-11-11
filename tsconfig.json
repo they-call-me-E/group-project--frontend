@@ -26,7 +26,9 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "app/component/map/Map.jsx"
+    "app/component/map/Map.jsx",
+    "app/shakib/MapComponent.js",
+    "app/shakib/page.js"
   ],
   "exclude": ["node_modules"]
 }

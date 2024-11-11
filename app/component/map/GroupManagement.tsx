@@ -1,7 +1,7 @@
 "use client";
 import Grid from "@mui/material/Grid2";
 import { Colors } from "../../theme/colors";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { styled } from "@mui/material/styles";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
@@ -152,6 +152,8 @@ const GroupManagement = ({
   const [editFencesLng, setEditFencesLng] = useState<any>(null);
   const [editFencesLat, setEditFencesLat] = useState<any>(null);
   const [editFencesAddress, setEditFencesAddress] = useState<string>("");
+  const circleSourceId = "center-circle-source";
+  const circleLayerId = "center-circle-layer";
 
   const {
     markersArray,
@@ -184,29 +186,198 @@ const GroupManagement = ({
     setPlacesMarkersArray([]);
   };
 
+  // const onCreateMapMove = () => {
+  //   const center = mapMain?.getCenter();
+  //   if (center) {
+  //     if (mapMain?.getSource(circleSourceId)) {
+  //       const newCenter = mapMain?.getCenter().toArray();
+  //       const updatedCircle = {
+  //         type: "FeatureCollection",
+  //         features: [
+  //           {
+  //             type: "Feature",
+  //             geometry: {
+  //               type: "Point",
+  //               coordinates: newCenter,
+  //             },
+  //           },
+  //         ],
+  //       };
+
+  //       const source = mapMain?.getSource(
+  //         circleSourceId
+  //       ) as mapboxgl.GeoJSONSource;
+  //       if (source) {
+  //         // @ts-ignore
+  //         source.setData(updatedCircle);
+  //       }
+  //     } else {
+  //       if (createFencesMapCircleRef.current) {
+  //         createFencesMapCircleRef.current.style.width = `0px`;
+  //         createFencesMapCircleRef.current.style.height = `0px`;
+  //       }
+
+  //       const circleMarker = {
+  //         type: "Feature",
+  //         geometry: {
+  //           type: "Point",
+  //           coordinates: mapMain?.getCenter().toArray(),
+  //         },
+  //       };
+
+  //       mapMain?.addSource(circleSourceId, {
+  //         type: "geojson",
+  //         data: {
+  //           type: "FeatureCollection",
+  //           // @ts-ignore
+  //           features: [circleMarker],
+  //         },
+  //       });
+
+  //       // Add a circle layer
+  //       mapMain?.addLayer({
+  //         id: circleLayerId,
+  //         type: "circle",
+  //         source: circleSourceId,
+  //         paint: {
+  //           "circle-radius": [
+  //             "interpolate",
+  //             ["linear"],
+  //             ["zoom"],
+  //             5,
+  //             400 * 0.15,
+  //             10,
+  //             400 * 0.4,
+  //             15,
+  //             400 * 0.6,
+  //           ],
+  //           "circle-color": Colors.blue,
+  //           "circle-opacity": 0.2,
+  //         },
+  //       });
+  //     }
+  //   }
+  // };
+  const onCreateMapMove = useCallback(() => {
+    const center = mapMain?.getCenter();
+    if (center) {
+      if (mapMain?.getSource(circleSourceId)) {
+        const newCenter = mapMain?.getCenter().toArray();
+        const updatedCircle = {
+          type: "FeatureCollection",
+          features: [
+            {
+              type: "Feature",
+              geometry: {
+                type: "Point",
+                coordinates: newCenter,
+              },
+            },
+          ],
+        };
+
+        const source = mapMain?.getSource(
+          circleSourceId
+        ) as mapboxgl.GeoJSONSource;
+        if (source) {
+          // @ts-ignore
+          source.setData(updatedCircle);
+        }
+      } else {
+        if (createFencesMapCircleRef.current) {
+          createFencesMapCircleRef.current.style.width = `0px`;
+          createFencesMapCircleRef.current.style.height = `0px`;
+        }
+
+        const circleMarker = {
+          type: "Feature",
+          geometry: {
+            type: "Point",
+            coordinates: mapMain?.getCenter().toArray(),
+          },
+        };
+
+        mapMain?.addSource(circleSourceId, {
+          type: "geojson",
+          data: {
+            type: "FeatureCollection",
+            // @ts-ignore
+            features: [circleMarker],
+          },
+        });
+
+        // Add a circle layer
+        mapMain?.addLayer({
+          id: circleLayerId,
+          type: "circle",
+          source: circleSourceId,
+          paint: {
+            "circle-radius": [
+              "interpolate",
+              ["linear"],
+              ["zoom"],
+              5,
+              400 * 0.15,
+              10,
+              400 * 0.4,
+              15,
+              400 * 0.6,
+            ],
+            "circle-color": Colors.blue,
+            "circle-opacity": 0.2,
+          },
+        });
+      }
+    }
+  }, []);
+
   const addCreateFencesNewMarker = (
     placesData: any,
-    mapInstance: mapboxgl.Map
+    mapInstance: mapboxgl.Map,
+    display: boolean = false
   ) => {
-    let { latitude, longitude } = placesData;
-    if (!mapInstance) return;
-    const map = mapInstance;
-
-    map.on("moveend", () => {
-      const center = map?.getCenter();
-      if (center) {
-        const [lng, lat] = map.getCenter()?.toArray();
-        setFencesLng(lng);
-        setFencesLat(lat);
-        getAddressFromCoordinates(lat, lng)
-          .then((res) => {
-            setFencesAddress(res);
-          })
-          .catch((error) => {
-            // setFencesAddressError()
-          });
+    // let { latitude, longitude } = placesData;
+    if (!mapMain) return;
+    // const map = mapMain;
+    if (display) {
+      if (mapMain?.getLayer(circleLayerId)) {
+        mapMain.removeLayer(circleLayerId);
       }
-    });
+      if (mapMain?.getSource(circleSourceId)) {
+        mapMain.removeSource(circleSourceId);
+      }
+      // @ts-ignore
+      mapMain.off("move", onCreateMapMove);
+    } else {
+      mapMain.on("moveend", () => {
+        const center = mapMain?.getCenter();
+        if (center) {
+          const [lng, lat] = mapMain.getCenter()?.toArray();
+          setFencesLng(lng);
+          setFencesLat(lat);
+          getAddressFromCoordinates(lat, lng)
+            .then((res) => {
+              setFencesAddress(res);
+            })
+            .catch((error) => {
+              // setFencesAddressError()
+            });
+        }
+      });
+      // zoom in and zoom out event functionality
+      // @ts-ignore
+      mapMain.on("move", onCreateMapMove);
+      // setTimeout(() => {
+      //   console.log("Disabled");
+      //   if (mapMain?.getLayer(circleLayerId)) {
+      //     mapMain.removeLayer(circleLayerId);
+      //   }
+      //   if (mapMain?.getSource(circleSourceId)) {
+      //     mapMain.removeSource(circleSourceId);
+      //   }
+      //   mapMain.off("move", onCreateMapMove);
+      // }, 5000);
+    }
   };
   const clearCreateFencesNewMarker = () => {
     createFencesMarkersArray.forEach((marker: any) => {
@@ -233,6 +404,15 @@ const GroupManagement = ({
     mapInstance: mapboxgl.Map,
     radiusValue: number
   ) => {
+    if (mapInstance.getSource(circleSourceId)) {
+      if (mapInstance.getLayer(circleLayerId)) {
+        mapInstance.removeLayer(circleLayerId);
+      }
+      if (mapInstance.getSource(circleSourceId)) {
+        mapInstance.removeSource(circleSourceId);
+      }
+      localStorage.removeItem("create_fences_radius_circle");
+    }
     if (createFencesMapCircleRef.current) {
       createFencesMapCircleRef.current.style.width = `${radiusValue}px`;
       createFencesMapCircleRef.current.style.height = `${radiusValue}px`;
@@ -802,6 +982,8 @@ const GroupManagement = ({
       {/* Create Fences */}
       {openCreateFencesModal ? (
         <CreateFences
+          addCreateFencesNewMarker={addCreateFencesNewMarker}
+          onCreateMapMove={onCreateMapMove}
           createFencesMapCircleRef={createFencesMapCircleRef}
           updateFencesNewMarker={updateFencesNewMarker}
           fencesLng={fencesLng}

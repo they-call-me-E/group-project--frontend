@@ -22,6 +22,8 @@ interface FormValues {
 }
 
 const CreateFences = ({
+  addCreateFencesNewMarker,
+  onCreateMapMove,
   createFencesMapCircleRef,
   updateFencesNewMarker,
   fencesLng,
@@ -38,6 +40,12 @@ const CreateFences = ({
   setCreateFenceserror,
   setCreateFencesErrorMsg,
 }: {
+  addCreateFencesNewMarker: (
+    placesData: any,
+    mapInstance: mapboxgl.Map,
+    display: boolean
+  ) => any;
+  onCreateMapMove: () => void;
   createFencesMapCircleRef: React.RefObject<HTMLDivElement>;
   updateFencesNewMarker: (
     placesData: any,
@@ -134,6 +142,14 @@ const CreateFences = ({
         );
 
         if (response?.data?.document) {
+          const circleSourceId = "center-circle-source";
+          const circleLayerId = "center-circle-layer";
+          if (mapMain?.getLayer(circleLayerId)) {
+            mapMain.removeLayer(circleLayerId);
+          }
+          if (mapMain?.getSource(circleSourceId)) {
+            mapMain.removeSource(circleSourceId);
+          }
           setOpenCreateFencesModal(false);
           setCreateFencesSuccess(true);
           clearCreateFencesNewMarker();
@@ -274,6 +290,12 @@ const CreateFences = ({
           color="inherit"
           aria-label="close"
           onClick={() => {
+            addCreateFencesNewMarker(
+              { latitude: 40.7128, longitude: -74.006 },
+              // @ts-ignore
+              mapMain,
+              true
+            );
             setRefetchDataOnMap(!refetchDataOnMap);
             clearCreateFencesNewMarker();
             setOpenCreateFencesModal(false);

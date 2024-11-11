@@ -473,6 +473,7 @@ const Map = ({
       });
 
       mapInstance.addControl(navigationControl, "top-right");
+      // Global variable
 
       mapInstance.on("load", () => {});
       setMapMain(mapInstance);
