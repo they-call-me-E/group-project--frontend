@@ -48,7 +48,7 @@ const ViewGroup = ({
   addCreateFencesNewMarker: (
     placesData: any,
     mapInstance: mapboxgl.Map,
-    display: false
+    radiusValue: any
   ) => any;
   handleGenerateInviteCode: (groupId: string) => void;
   singleGroupInformation: any;
@@ -527,10 +527,10 @@ const ViewGroup = ({
                       clearPreviousAllMarkers();
 
                       addCreateFencesNewMarker(
-                        { latitude: 40.7128, longitude: -74.006 },
+                        { latitude: 34, longitude: -81 },
                         // @ts-ignore
                         mapMain,
-                        false
+                        250
                       );
                     }}
                     variant="contained"

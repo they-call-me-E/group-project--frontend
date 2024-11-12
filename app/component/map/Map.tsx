@@ -11,6 +11,7 @@ import { useSession } from "next-auth/react";
 import { Colors } from "../../theme/colors";
 import { useMarkerOnMapContext } from "./../../context/map/MarkerOnMapContext";
 import { usePlacesMenuListOpenContext } from "./../../context/map/PlacesMenuListContext";
+import { createGeoJSONCircle } from "./../../utils/createGeoJSONCircle";
 
 // @ts-ignore
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
@@ -356,99 +357,81 @@ const Map = ({
     return marker;
   };
 
+  // Define the `addPlaces` function to add the circle and marker
   const addPlaces = (placesData: any, mapInstance: mapboxgl.Map) => {
     let { latitude, longitude } = placesData?.location;
 
     const sourceId = `circle-${latitude}-${longitude}`;
     const layerId = `circle-layer-${latitude}-${longitude}`;
 
-    // Create a circle marker
-    const circleMarker: any = {
-      type: "Feature",
-      geometry: {
-        type: "Point",
-        coordinates: [longitude, latitude],
-      },
-    };
+    // Calculate the GeoJSON circle feature using the custom `createGeoJSONCircle` function
+    const circleGeoJSON = createGeoJSONCircle(
+      { lat: latitude, lng: longitude },
+      placesData.radius // Pass radius in feet to createGeoJSONCircle
+    );
 
     // Check if the source already exists
     if (!mapInstance.getSource(sourceId)) {
-      // Add source for the circle
+      // Add source for the circle with GeoJSON data
       mapInstance.addSource(sourceId, {
         type: "geojson",
-        data: {
-          type: "FeatureCollection",
-          features: [circleMarker],
-        },
+        // @ts-ignore
+        data: circleGeoJSON,
       });
 
-      // Add a circle layer
+      // Add a fill layer for the circle shape
       mapInstance.addLayer({
-        id: `circle-layer-${latitude}-${longitude}`,
-        type: "circle",
-        source: `circle-${latitude}-${longitude}`,
+        id: layerId,
+        type: "fill",
+        source: sourceId,
         paint: {
-          "circle-radius": [
-            "interpolate",
-            ["linear"],
-            ["zoom"],
-            5,
-            placesData?.radius * 0.15,
-            10,
-            placesData?.radius * 0.4,
-            15,
-            placesData?.radius * 0.6,
-          ],
-          "circle-color": Colors.blue,
-          "circle-opacity": 0.2,
+          "fill-color": Colors.blue,
+          "fill-opacity": 0.2,
         },
       });
     } else {
       // Update the existing source if necessary
       const source = mapInstance.getSource(sourceId) as mapboxgl.GeoJSONSource;
-      source.setData({
-        type: "FeatureCollection",
-        features: [circleMarker],
-      });
+      // @ts-ignore
+      source.setData(circleGeoJSON);
     }
 
-    // Create the marker element with a custom SVG icon
-
+    // Create a custom SVG marker element
     const markerElement = document.createElement("div");
     markerElement.innerHTML = `
-      <div class="places_icon_parent">
-           <svg display="block" height="41px" width="27px" viewBox="0 0 27 41">
-          <g fillRule="nonzero">
-              <g transform="translate(3.0, 29.0)" fill="#000000">
-                  <ellipse opacity="0.04" cx="10.5" cy="5.80029008" rx="10.5" ry="5.25002273"></ellipse>
-              </g>
-              <g fill="#3FB1CE">
-                  <path d="M27,13.5 C27,19.074644 20.250001,27.000002 14.75,34.500002 C14.016665,35.500004 12.983335,35.500004 12.25,34.500002 C6.7499993,27.000002 0,19.222562 0,13.5 C0,6.0441559 6.0441559,0 13.5,0 C20.955844,0 27,6.0441559 27,13.5 Z"></path>
-              </g>
-              <g opacity="0.25" fill="#000000">
-                  <path d="M13.5,0 C6.0441559,0 0,6.0441559 0,13.5 C0,19.222562 6.7499993,27 12.25,34.5 C13,35.522727 14.016664,35.500004 14.75,34.5 C20.250001,27 27,19.074644 27,13.5 C27,6.0441559 20.955844,0 13.5,0 Z"></path>
-              </g>
-              <g transform="translate(6.0, 7.0)" fill="#FFFFFF"></g>
-              <g transform="translate(8.0, 8.0)">
-                  <circle fill="#000000" opacity="0.25" cx="5.5" cy="5.5" r="5.4999962"></circle>
-                  <circle fill="#FFFFFF" cx="5.5" cy="5.5" r="5.4999962"></circle>
-              </g>
-          </g>
-      </svg>
-      </div>
-    `;
+    <div class="places_icon_parent">
+         <svg display="block" height="41px" width="27px" viewBox="0 0 27 41">
+        <g fillRule="nonzero">
+            <g transform="translate(3.0, 29.0)" fill="#000000">
+                <ellipse opacity="0.04" cx="10.5" cy="5.80029008" rx="10.5" ry="5.25002273"></ellipse>
+            </g>
+            <g fill="#3FB1CE">
+                <path d="M27,13.5 C27,19.074644 20.250001,27.000002 14.75,34.500002 C14.016665,35.500004 12.983335,35.500004 12.25,34.500002 C6.7499993,27.000002 0,19.222562 0,13.5 C0,6.0441559 6.0441559,0 13.5,0 C20.955844,0 27,6.0441559 27,13.5 Z"></path>
+            </g>
+            <g opacity="0.25" fill="#000000">
+                <path d="M13.5,0 C6.0441559,0 0,6.0441559 0,13.5 C0,19.222562 6.7499993,27 12.25,34.5 C13,35.522727 14.016664,35.500004 14.75,34.5 C20.250001,27 27,19.074644 27,13.5 C27,6.0441559 20.955844,0 13.5,0 Z"></path>
+            </g>
+            <g transform="translate(6.0, 7.0)" fill="#FFFFFF"></g>
+            <g transform="translate(8.0, 8.0)">
+                <circle fill="#000000" opacity="0.25" cx="5.5" cy="5.5" r="5.4999962"></circle>
+                <circle fill="#FFFFFF" cx="5.5" cy="5.5" r="5.4999962"></circle>
+            </g>
+        </g>
+    </svg>
+    </div>
+  `;
 
+    // Create and add the marker to the map
     const marker = new mapboxgl.Marker({
-      // draggable: true,
       element: markerElement,
     });
     if (longitude && latitude) {
       marker.setLngLat([longitude, latitude]).addTo(mapInstance);
     }
 
-    // Return the marker for later reference
-    // setMarkersArray((prevMarkers: any) => [...prevMarkers, marker]);
+    // Store marker in the array for later reference
     setPlacesMarkersArray((prevMarkers: any) => [...prevMarkers, marker]);
+
     return marker;
   };
 
@@ -463,8 +446,8 @@ const Map = ({
         // @ts-ignore
         container: mapContainerRef.current,
         style: "mapbox://styles/mapbox/dark-v10",
-        zoom: 8,
-        center: [-74.006, 40.7128],
+        zoom: 9,
+        center: [-81, 34],
         // showLogo: false,
       });
 

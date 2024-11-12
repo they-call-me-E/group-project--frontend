@@ -12,6 +12,7 @@ import { useUserActionOpenContext } from "../../../context/map/UserActionContext
 import { usePlacesMenuListOpenContext } from "../../../context/map/PlacesMenuListContext";
 import { getCoordinatesFromAddress } from "./../../../utils/getCoordinatesFromAddress";
 import { IoSearchSharp } from "react-icons/io5";
+import { createGeoJSONCircle } from "./../../../utils/createGeoJSONCircle";
 
 interface FormValues {
   name: string;
@@ -23,8 +24,8 @@ interface FormValues {
 
 const CreateFences = ({
   addCreateFencesNewMarker,
-  onCreateMapMove,
-  createFencesMapCircleRef,
+  radiusValue,
+  setRadiusValue,
   updateFencesNewMarker,
   fencesLng,
   setFencesLng,
@@ -43,10 +44,10 @@ const CreateFences = ({
   addCreateFencesNewMarker: (
     placesData: any,
     mapInstance: mapboxgl.Map,
-    display: boolean
+    radiusValue: any
   ) => any;
-  onCreateMapMove: () => void;
-  createFencesMapCircleRef: React.RefObject<HTMLDivElement>;
+  radiusValue: any;
+  setRadiusValue: React.Dispatch<React.SetStateAction<any>>;
   updateFencesNewMarker: (
     placesData: any,
     mapInstance: mapboxgl.Map,
@@ -65,15 +66,13 @@ const CreateFences = ({
   setCreateFencesSuccess: React.Dispatch<React.SetStateAction<any>>;
   setCreateFenceserror: React.Dispatch<React.SetStateAction<any>>;
   setCreateFencesErrorMsg: React.Dispatch<React.SetStateAction<any>>;
-  // reFetchGroupListData: () => void;
 }) => {
   const { refetchDataOnMap, setRefetchDataOnMap } =
     usePlacesMenuListOpenContext();
   const { handleGroupModalReset } = useUserActionOpenContext();
-  const [radiusValue, setRadiusValue] = useState<any>(null);
   const { data: session, status } = useSession();
   const [loading, setLoading] = useState(false);
-  const [radisuRange, setRadiusRange] = useState([0, 400]);
+  const [radisuRange, setRadiusRange] = useState([250, 1000]);
   const formik = useFormik<FormValues>({
     initialValues: {
       name: "",
@@ -142,14 +141,6 @@ const CreateFences = ({
         );
 
         if (response?.data?.document) {
-          const circleSourceId = "center-circle-source";
-          const circleLayerId = "center-circle-layer";
-          if (mapMain?.getLayer(circleLayerId)) {
-            mapMain.removeLayer(circleLayerId);
-          }
-          if (mapMain?.getSource(circleSourceId)) {
-            mapMain.removeSource(circleSourceId);
-          }
           setOpenCreateFencesModal(false);
           setCreateFencesSuccess(true);
           clearCreateFencesNewMarker();
@@ -176,17 +167,31 @@ const CreateFences = ({
 
   const handleChange = (event: Event, newValue: number | number[]) => {
     const rangeValue = newValue as number[];
+
+    // update map circle code start
+    var center = mapMain?.getCenter();
+    // @ts-ignore
+    mapMain
+      ?.getSource("geofence")
+      // @ts-ignore
+      .setData(createGeoJSONCircle(center, rangeValue[0]));
     setRadiusValue(rangeValue[0]);
     setRadiusRange(rangeValue);
+    addCreateFencesNewMarker(
+      { latitude: 34, longitude: -81 },
+      // @ts-ignore
+      mapMain,
+      rangeValue[0]
+    );
 
-    if (fencesLat && fencesLng) {
-      updateFencesNewMarker(
-        { latitude: fencesLat, longitude: fencesLng },
-        // @ts-ignore
-        mapMain,
-        rangeValue[0]
-      );
-    }
+    // if (fencesLat && fencesLng) {
+    //   updateFencesNewMarker(
+    //     { latitude: fencesLat, longitude: fencesLng },
+    //     // @ts-ignore
+    //     mapMain,
+    //     rangeValue[0]
+    //   );
+    // }
   };
   // flytoLocation function
 
@@ -194,7 +199,7 @@ const CreateFences = ({
     if (mapMain) {
       mapMain.flyTo({
         center: [longitude, latitude],
-        zoom: 12,
+        zoom: 15,
         essential: true,
       });
     }
@@ -202,70 +207,6 @@ const CreateFences = ({
 
   return (
     <>
-      <div
-        style={{
-          position: "absolute",
-          top: "50%",
-          left: "50%",
-          transform: "translate(-50%, -50%)",
-          zIndex: 1000,
-          pointerEvents: "none",
-        }}
-      >
-        <div
-          style={{
-            position: "relative",
-          }}
-        >
-          <div
-            ref={createFencesMapCircleRef}
-            style={{
-              position: "absolute",
-              top: "50%",
-              left: "50%",
-              transform: "translate(-50%, -50%)",
-              zIndex: 1000,
-              pointerEvents: "none",
-              width: "0px",
-              height: "0px",
-              borderRadius: "100%",
-              backgroundColor: Colors.blue,
-              opacity: 0.2,
-            }}
-          ></div>
-          <svg display="block" height="41px" width="27px" viewBox="0 0 27 41">
-            <g fillRule="nonzero">
-              <g transform="translate(3.0, 29.0)" fill="#000000">
-                <ellipse
-                  opacity="0.04"
-                  cx="10.5"
-                  cy="5.80029008"
-                  rx="10.5"
-                  ry="5.25002273"
-                ></ellipse>
-              </g>
-              <g fill="#3FB1CE">
-                <path d="M27,13.5 C27,19.074644 20.250001,27.000002 14.75,34.500002 C14.016665,35.500004 12.983335,35.500004 12.25,34.500002 C6.7499993,27.000002 0,19.222562 0,13.5 C0,6.0441559 6.0441559,0 13.5,0 C20.955844,0 27,6.0441559 27,13.5 Z"></path>
-              </g>
-              <g opacity="0.25" fill="#000000">
-                <path d="M13.5,0 C6.0441559,0 0,6.0441559 0,13.5 C0,19.222562 6.7499993,27 12.25,34.5 C13,35.522727 14.016664,35.500004 14.75,34.5 C20.250001,27 27,19.074644 27,13.5 C27,6.0441559 20.955844,0 13.5,0 Z"></path>
-              </g>
-              <g transform="translate(6.0, 7.0)" fill="#FFFFFF"></g>
-              <g transform="translate(8.0, 8.0)">
-                <circle
-                  fill="#000000"
-                  opacity="0.25"
-                  cx="5.5"
-                  cy="5.5"
-                  r="5.4999962"
-                ></circle>
-                <circle fill="#FFFFFF" cx="5.5" cy="5.5" r="5.4999962"></circle>
-              </g>
-            </g>
-          </svg>
-        </div>
-      </div>
-
       <Grid
         sx={{
           overflowY: "auto",
@@ -290,12 +231,6 @@ const CreateFences = ({
           color="inherit"
           aria-label="close"
           onClick={() => {
-            addCreateFencesNewMarker(
-              { latitude: 40.7128, longitude: -74.006 },
-              // @ts-ignore
-              mapMain,
-              true
-            );
             setRefetchDataOnMap(!refetchDataOnMap);
             clearCreateFencesNewMarker();
             setOpenCreateFencesModal(false);
@@ -606,10 +541,10 @@ const CreateFences = ({
               onChange={handleChange}
               valueLabelDisplay="auto"
               min={0}
-              max={400}
+              max={1000}
               marks={[
                 { value: 0, label: "0" },
-                { value: 400, label: "400" },
+                { value: 1000, label: "1000ft" },
               ]}
               sx={{
                 color: "primary.main",
@@ -619,7 +554,7 @@ const CreateFences = ({
                 },
                 "& .MuiSlider-track": {
                   backgroundColor: Colors.blue,
-                  width: `${(radisuRange[0] / 400) * 100}%`,
+                  width: `${(radisuRange[0] / 1000) * 100}%`,
                 },
                 "& .MuiSlider-rail": {
                   backgroundColor: Colors.blue,
