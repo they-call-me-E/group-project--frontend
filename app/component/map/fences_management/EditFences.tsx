@@ -12,6 +12,7 @@ import { IoSearchSharp } from "react-icons/io5";
 import { usePlacesMenuListOpenContext } from "../../../context/map/PlacesMenuListContext";
 import { useUserActionOpenContext } from "../../../context/map/UserActionContext";
 import { getCoordinatesFromAddress } from "./../../../utils/getCoordinatesFromAddress";
+import { createGeoJSONCircle } from "./../../../utils/createGeoJSONCircle";
 
 interface FormValues {
   name: string;
@@ -22,6 +23,8 @@ interface FormValues {
 }
 
 const EditFences = ({
+  clearUpdateFencesNewMarker,
+  addUpdateFencesNewMarker,
   mapMain,
   editFencesNewCircle,
   fencesLng,
@@ -41,6 +44,12 @@ const EditFences = ({
   singleFences,
 }: // reFetchGroupListData,
 {
+  clearUpdateFencesNewMarker: () => void;
+  addUpdateFencesNewMarker: (
+    placesData: any,
+    mapInstance: mapboxgl.Map,
+    radiusValue: any
+  ) => any;
   mapMain: mapboxgl.Map | null;
   editFencesNewCircle: (
     placesData: any,
@@ -68,7 +77,7 @@ const EditFences = ({
   const { handleGroupModalReset } = useUserActionOpenContext();
   const { refetchDataOnMap, setRefetchDataOnMap } =
     usePlacesMenuListOpenContext();
-  const [radisuRange, setRadiusRange] = useState([0, 400]);
+  const [radisuRange, setRadiusRange] = useState([0, 1000]);
   const { data: session, status } = useSession();
   const [loading, setLoading] = useState(false);
   const formik = useFormik<FormValues>({
@@ -127,6 +136,7 @@ const EditFences = ({
           setOpenEditFencesModal(false);
           setRefetchDataOnMap(!refetchDataOnMap);
           handleGroupModalReset();
+          clearUpdateFencesNewMarker();
         }
       } catch (error: any) {
         if (error?.response?.data?.message) {
@@ -179,8 +189,21 @@ const EditFences = ({
 
   const handleChange = (event: Event, newValue: number | number[]) => {
     const rangeValue = newValue as number[];
+    // update map circle code start
+    var center = mapMain?.getCenter();
+    // @ts-ignore
+    mapMain
+      ?.getSource("geofence")
+      // @ts-ignore
+      .setData(createGeoJSONCircle(center, rangeValue[0]));
     setRadiusValue(rangeValue[0]);
     setRadiusRange(rangeValue);
+    addUpdateFencesNewMarker(
+      { latitude: 34, longitude: -81 },
+      // @ts-ignore
+      mapMain,
+      rangeValue[0]
+    );
     // if (fencesLat && fencesLng) {
     //   editFencesNewCircle(
     //     { latitude: fencesLat, longitude: fencesLng },
@@ -212,7 +235,7 @@ const EditFences = ({
 
   return (
     <>
-      <div
+      {/* <div
         style={{
           position: "absolute",
           top: "50%",
@@ -274,7 +297,7 @@ const EditFences = ({
             </g>
           </svg>
         </div>
-      </div>
+      </div> */}
       <Grid
         sx={{
           overflowY: "auto",
@@ -303,6 +326,7 @@ const EditFences = ({
             setOpenEditFencesModal(false);
             setRefetchDataOnMap(!refetchDataOnMap);
             handleGroupModalReset();
+            clearUpdateFencesNewMarker();
           }}
           sx={{
             position: "absolute",
@@ -588,10 +612,10 @@ const EditFences = ({
               onChange={handleChange}
               valueLabelDisplay="auto"
               min={0}
-              max={400}
+              max={1000}
               marks={[
                 { value: 0, label: "0" },
-                { value: 400, label: "400" },
+                { value: 1000, label: "1000ft" },
               ]}
               sx={{
                 color: "primary.main",
@@ -601,7 +625,7 @@ const EditFences = ({
                 },
                 "& .MuiSlider-track": {
                   backgroundColor: Colors.blue,
-                  width: `${(radisuRange[0] / 400) * 100}%`,
+                  width: `${(radisuRange[0] / 1000) * 100}%`,
                 },
                 "& .MuiSlider-rail": {
                   backgroundColor: Colors.blue,

@@ -145,6 +145,15 @@ const GroupManagement = ({
   const circleSourceId = "center-circle-source";
   const circleLayerId = "center-circle-layer";
   const [radiusValue, setRadiusValue] = useState<any>(250);
+  const [currentRadius, setCurrentRadius] = useState(250);
+  const [centerMarker, setCenterMarker] = useState<mapboxgl.Marker | null>(
+    null
+  );
+  const [editFencesMarkersArray, setEditFencesMarkersArray] = useState<any>([]);
+
+  const [currentEditFenceRadius, setCurrentEditFenceRadius] = useState(250);
+  const [currentEditFenceCenterMarker, setCurrentEditFenceCenterMarker] =
+    useState<mapboxgl.Marker | null>(null);
 
   const {
     markersArray,
@@ -177,62 +186,137 @@ const GroupManagement = ({
     setPlacesMarkersArray([]);
   };
 
+  useEffect(() => {
+    if (!mapMain) return;
+
+    const handleMapMove = () => {
+      if (!centerMarker || !currentRadius) return;
+
+      const center = mapMain.getCenter();
+      centerMarker.setLngLat(center);
+
+      // @ts-ignore
+      mapMain
+        .getSource("geofence")
+        // @ts-ignore
+        .setData(createGeoJSONCircle(center, currentRadius));
+    };
+
+    const handleMapMoveEnd = () => {
+      const center = mapMain.getCenter();
+      const [lng, lat] = center.toArray();
+
+      setFencesLng(lng);
+      setFencesLat(lat);
+      getAddressFromCoordinates(lat, lng)
+        .then((res) => {
+          setFencesAddress(res);
+        })
+        .catch((error) => {});
+    };
+
+    mapMain.on("move", handleMapMove);
+    mapMain.on("moveend", handleMapMoveEnd);
+
+    return () => {
+      mapMain.off("move", handleMapMove);
+      mapMain.off("moveend", handleMapMoveEnd);
+    };
+  }, [mapMain, centerMarker, currentRadius]);
+  useEffect(() => {
+    if (!mapMain) return;
+
+    // const [currentEditFenceRadius, setCurrentEditFenceRadius] = useState(250);
+    // const [currentEditFenceCenterMarker, setCurrentEditFenceCenterMarker] =
+    //    useState<mapboxgl.Marker | null>(null);
+
+    const handleMapMove = () => {
+      if (!currentEditFenceCenterMarker || !currentEditFenceRadius) return;
+
+      const center = mapMain.getCenter();
+      currentEditFenceCenterMarker.setLngLat(center);
+
+      // @ts-ignore
+      mapMain
+        .getSource("geofence")
+        // @ts-ignore
+        .setData(createGeoJSONCircle(center, currentEditFenceRadius));
+    };
+
+    const handleMapMoveEnd = () => {
+      const center = mapMain.getCenter();
+      const [lng, lat] = center.toArray();
+      //       setEditFencesLng(lng);
+      //       setEditFencesLat(lat);
+      //       getAddressFromCoordinates(lat, lng)
+
+      setEditFencesLng(lng);
+      setEditFencesLat(lat);
+      getAddressFromCoordinates(lat, lng)
+        .then((res) => {
+          setEditFencesAddress(res);
+        })
+        .catch((error) => {});
+    };
+
+    mapMain.on("move", handleMapMove);
+    mapMain.on("moveend", handleMapMoveEnd);
+
+    return () => {
+      mapMain.off("move", handleMapMove);
+      mapMain.off("moveend", handleMapMoveEnd);
+    };
+  }, [mapMain, currentEditFenceRadius, currentEditFenceCenterMarker]);
+
+  // Initialize listeners once and update only the radius
   const addCreateFencesNewMarker = (
     placesData: any,
     mapInstance: mapboxgl.Map,
     radiusValue: any = 250
   ) => {
-    let marker = new mapboxgl.Marker({ draggable: false })
-      .setLngLat(mapInstance.getCenter())
-      .addTo(mapInstance);
-    setCreateFencesMarkersArray((prevMarkers: any) => [...prevMarkers, marker]);
-    if (!mapInstance.getSource("geofence")) {
-      mapInstance.addSource("geofence", {
-        type: "geojson",
-        // @ts-ignore
-        data: createGeoJSONCircle(mapInstance.getCenter(), radiusValue),
-      });
-    } else {
+    setCurrentRadius(radiusValue);
+
+    // Remove existing layer and source if they exist
+    if (mapInstance.getLayer("geofence-layer")) {
+      mapInstance.removeLayer("geofence-layer");
     }
-    if (!mapInstance.getLayer("geofence-layer")) {
-      mapInstance.addLayer({
-        id: "geofence-layer",
-        type: "fill",
-        source: "geofence",
-        layout: {},
-        paint: {
-          "fill-color": Colors.blue,
-          "fill-opacity": 0.2,
-        },
-      });
-    } else {
+    if (mapInstance.getSource("geofence")) {
+      mapInstance.removeSource("geofence");
     }
-    // Update the geofence when the map moves
-    mapInstance.on("move", function () {
+
+    // Add or update the marker at the center
+    let marker = centerMarker;
+    if (!marker) {
+      marker = new mapboxgl.Marker({ draggable: false })
+        .setLngLat(mapInstance.getCenter())
+        .addTo(mapInstance);
+      setCenterMarker(marker);
+    } else {
       marker.setLngLat(mapInstance.getCenter());
-      let center = mapInstance.getCenter();
+    }
+
+    setCreateFencesMarkersArray((prevMarkers: any) => [...prevMarkers, marker]);
+
+    // Add the new source for the geofence
+    mapInstance.addSource("geofence", {
+      type: "geojson",
       // @ts-ignore
-      mapInstance
-        .getSource("geofence")
-        // @ts-ignore
-        .setData(createGeoJSONCircle(center, radiusValue));
+      data: createGeoJSONCircle(mapInstance.getCenter(), radiusValue),
     });
-    mapInstance.on("moveend", () => {
-      const center = mapInstance?.getCenter();
-      if (center) {
-        const [lng, lat] = mapInstance.getCenter()?.toArray();
-        setFencesLng(lng);
-        setFencesLat(lat);
-        getAddressFromCoordinates(lat, lng)
-          .then((res) => {
-            setFencesAddress(res);
-          })
-          .catch((error) => {
-            // setFencesAddressError()
-          });
-      }
+
+    // Add the new layer for the geofence
+    mapInstance.addLayer({
+      id: "geofence-layer",
+      type: "fill",
+      source: "geofence",
+      layout: {},
+      paint: {
+        "fill-color": Colors.blue,
+        "fill-opacity": 0.2,
+      },
     });
   };
+
   const clearCreateFencesNewMarker = () => {
     const geofenceSourceId = "geofence";
     const geofenceLayerId = "geofence-layer";
@@ -265,30 +349,72 @@ const GroupManagement = ({
       createFencesMapCircleRef.current.style.height = `${radiusValue}px`;
     }
   };
-
   const addUpdateFencesNewMarker = (
     placesData: any,
-    mapInstance: mapboxgl.Map
+    mapInstance: mapboxgl.Map,
+    radiusValue: any = 250
   ) => {
-    if (!mapInstance) return;
-    const map = mapInstance;
+    setCurrentEditFenceRadius(radiusValue);
 
-    map.on("moveend", () => {
-      const center = map?.getCenter();
-      if (center) {
-        const [lng, lat] = map.getCenter()?.toArray();
-        setEditFencesLng(lng);
-        setEditFencesLat(lat);
-        getAddressFromCoordinates(lat, lng)
-          .then((res) => {
-            setEditFencesAddress(res);
-          })
-          .catch((error) => {
-            // setFencesAddressError()
-          });
-      }
+    // Remove existing layer and source if they exist
+    if (mapInstance.getLayer("geofence-layer")) {
+      mapInstance.removeLayer("geofence-layer");
+    }
+    if (mapInstance.getSource("geofence")) {
+      mapInstance.removeSource("geofence");
+    }
+
+    // Add or update the marker at the center
+    let marker = currentEditFenceCenterMarker;
+    if (!marker) {
+      marker = new mapboxgl.Marker({ draggable: false })
+        .setLngLat(mapInstance.getCenter())
+        .addTo(mapInstance);
+      setCurrentEditFenceCenterMarker(marker);
+    } else {
+      marker.setLngLat(mapInstance.getCenter());
+    }
+
+    // const [currentEditFenceRadius, setCurrentEditFenceRadius] = useState(250);
+    // const [currentEditFenceCenterMarker, setCurrentEditFenceCenterMarker] = useState<mapboxgl.Marker | null>(
+    //   null
+    // );
+
+    // const [editFencesMarkersArray, setEditFencesMarkersArray] = useState<any>([])
+    setEditFencesMarkersArray((prevMarkers: any) => [...prevMarkers, marker]);
+
+    // Add the new source for the geofence
+    mapInstance.addSource("geofence", {
+      type: "geojson",
+      // @ts-ignore
+      data: createGeoJSONCircle(mapInstance.getCenter(), radiusValue),
+    });
+
+    // Add the new layer for the geofence
+    mapInstance.addLayer({
+      id: "geofence-layer",
+      type: "fill",
+      source: "geofence",
+      layout: {},
+      paint: {
+        "fill-color": Colors.blue,
+        "fill-opacity": 0.2,
+      },
     });
   };
+  const clearUpdateFencesNewMarker = () => {
+    const geofenceSourceId = "geofence";
+    const geofenceLayerId = "geofence-layer";
+    editFencesMarkersArray.forEach((marker: any) => marker.remove());
+    setEditFencesMarkersArray([]);
+    if (mapMain?.getSource(geofenceSourceId)) {
+      mapMain?.removeSource(geofenceSourceId);
+    }
+    if (mapMain?.getLayer(geofenceLayerId)) {
+      mapMain?.removeLayer(geofenceLayerId);
+    }
+  };
+
   const editFencesNewCircle = (
     placesData: any,
     mapInstance: mapboxgl.Map,
@@ -894,6 +1020,8 @@ const GroupManagement = ({
       {/* Edit Fences */}
       {openEditFencesModal ? (
         <EditFences
+          clearUpdateFencesNewMarker={clearUpdateFencesNewMarker}
+          addUpdateFencesNewMarker={addUpdateFencesNewMarker}
           mapMain={mapMain}
           editFencesNewCircle={editFencesNewCircle}
           fencesLng={editFencesLng}

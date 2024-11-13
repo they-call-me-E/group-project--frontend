@@ -26,7 +26,11 @@ const ViewFences = ({
   singleGroupInformation,
   setOpenFencesManagementModal,
 }: {
-  addUpdateFencesNewMarker: (placesData: any, mapInstance: mapboxgl.Map) => any;
+  addUpdateFencesNewMarker: (
+    placesData: any,
+    mapInstance: mapboxgl.Map,
+    radiusValue: any
+  ) => any;
   mapMain: mapboxgl.Map | null;
   clearPreviousAllMarkers: () => void;
   setMainSidebarMenuOpen: React.Dispatch<React.SetStateAction<any>>;
@@ -234,7 +238,8 @@ const ViewFences = ({
                       addUpdateFencesNewMarker(
                         { latitude: 40.7128, longitude: -74.006 },
                         // @ts-ignore
-                        mapMain
+                        mapMain,
+                        250
                       );
                     }}
                     variant="contained"
