@@ -182,7 +182,7 @@ const Map = ({
             </svg>
            </div>`
            : `<img 
-        src=${member?.avatar} ? "${process.env.NEXT_PUBLIC_IMAGE_API_URL}/img/users/${member?.avatar}" : "/default_user.png"
+        src=${member?.avatar} ? "${member?.avatar}" : "/default_user.png"
         alt="image"
       />`
        }
@@ -505,7 +505,7 @@ const Map = ({
                 location: res?.data?.user?.location,
                 status: res?.data?.user?.status,
                 avatar: res?.data?.user?.avatar
-                  ? `${process.env.NEXT_PUBLIC_IMAGE_API_URL}/img/users/${res?.data?.user?.avatar}`
+                  ? `${res?.data?.user?.avatar}`
                   : "/default_user.png",
                 badgeImageUrl:
                   "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png",
@@ -532,9 +532,7 @@ const Map = ({
               name: user?.name,
               location: user?.location,
               status: user?.status,
-              avatar: user?.avatar
-                ? `${process.env.NEXT_PUBLIC_IMAGE_API_URL}/img/users/${user?.avatar}`
-                : "/default_user.png",
+              avatar: user?.avatar ? `${user?.avatar}` : "/default_user.png",
               badgeImageUrl:
                 "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png",
             });

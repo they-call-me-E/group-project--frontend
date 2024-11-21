@@ -675,7 +675,7 @@ const ViewGroup = ({
                   <div className="basis-[60%]">
                     {item?.avatar ? (
                       <Image
-                        src={`${process.env.NEXT_PUBLIC_IMAGE_API_URL}/img/users/${item?.avatar}`}
+                        src={`${item?.avatar}`}
                         width={36}
                         height={36}
                         alt="User Icon"
@@ -856,7 +856,7 @@ const ViewGroup = ({
                   <div className="basis-[60%]">
                     {item?.avatar ? (
                       <Image
-                        src={`${process.env.NEXT_PUBLIC_IMAGE_API_URL}/img/users/${item?.avatar}`}
+                        src={`${item?.avatar}`}
                         width={36}
                         height={36}
                         alt="User Icon"

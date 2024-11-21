@@ -351,7 +351,7 @@ const EditProfile = ({
                 ) : userInformationData?.avatar ? (
                   <Box sx={{ position: "relative", width: 60, height: 60 }}>
                     <Image
-                      src={`${process.env.NEXT_PUBLIC_IMAGE_API_URL}/img/users/${userInformationData?.avatar}`}
+                      src={`${userInformationData?.avatar}`}
                       alt="Profile Picture"
                       layout="fill"
                       objectFit="cover"

@@ -172,7 +172,7 @@ const UserInformation = ({
             >
               {userInformationData?.avatar ? (
                 <Image
-                  src={`${process.env.NEXT_PUBLIC_IMAGE_API_URL}/img/users/${userInformationData?.avatar}`}
+                  src={`${userInformationData?.avatar}`}
                   width={36}
                   height={36}
                   alt="User Icon"

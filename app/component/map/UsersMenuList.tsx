@@ -165,7 +165,7 @@ const UsersMenuList = ({
 
               {user?.avatar ? (
                 <Image
-                  src={`${process.env.NEXT_PUBLIC_IMAGE_API_URL}/img/users/${user?.avatar}`}
+                  src={`${user?.avatar}`}
                   width={36}
                   height={36}
                   alt="User Icon"

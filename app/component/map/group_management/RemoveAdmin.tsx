@@ -202,7 +202,7 @@ const RemoveAdmin = ({
               >
                 {option?.avatar ? (
                   <Image
-                    src={`${process.env.NEXT_PUBLIC_IMAGE_API_URL}/img/users/${option?.avatar}`}
+                    src={`${option?.avatar}`}
                     width={36}
                     height={36}
                     alt="User Icon"
