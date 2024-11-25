@@ -38,6 +38,7 @@ const Map = ({
   mapMain,
   setMapMain,
 }: MapProps) => {
+ 
   const { data: session, status }: { data: any; status: string } = useSession();
   const {
     markersArray,

@@ -108,14 +108,20 @@ export default function Home() {
 
       // Listen for updates related to the user
       socket.on("userLocationUpdated", (data) => {
-        setUserInfoWithSocket(data?.userInfo);
+        if (groupId) {
+          usersMenuDataList(groupId)
+            .then((res) => {
+              setUserInfoWithSocket(data?.userInfo);
+            })
+            .catch((error) => {});
+        }
       });
     }
 
     return () => {
       socket.off("locationUpdated");
     };
-  }, [userInformationData?.uuid]);
+  }, [userInformationData?.uuid, groupId]);
   // socket code end
 
   useEffect(() => {
