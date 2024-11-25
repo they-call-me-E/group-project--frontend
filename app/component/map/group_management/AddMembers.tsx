@@ -51,6 +51,7 @@ const AddMembers = ({
       })
       .catch((error) => {});
   }, []);
+
   const handleAddMember = (userId: any, groupId: string) => {
     axios
       .patch(

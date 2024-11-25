@@ -12,11 +12,13 @@ import { Colors } from "../../theme/colors";
 import { useMarkerOnMapContext } from "./../../context/map/MarkerOnMapContext";
 import { usePlacesMenuListOpenContext } from "./../../context/map/PlacesMenuListContext";
 import { createGeoJSONCircle } from "./../../utils/createGeoJSONCircle";
+import DefaultUser from "./../../../assets/default_user.png";
 
 // @ts-ignore
 mapboxgl.accessToken = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
 
 interface MapProps {
+  userInfoWithSocket: any;
   editProfileSuccess: boolean;
   locationWithStatusSuccess: boolean;
   placesList: any[];
@@ -27,6 +29,7 @@ interface MapProps {
 }
 
 const Map = ({
+  userInfoWithSocket,
   editProfileSuccess,
   locationWithStatusSuccess,
   placesList,
@@ -557,6 +560,7 @@ const Map = ({
     editProfileSuccess,
     mapMain,
     placesList,
+    userInfoWithSocket,
   ]);
 
   return (

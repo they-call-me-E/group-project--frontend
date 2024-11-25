@@ -22,9 +22,11 @@ interface MapWithUsersProps {
   ) => void;
   mapMain: mapboxgl.Map | null;
   userInformationData: any;
+  userInfoWithSocket: any;
 }
 
 const UsersMenuList = ({
+  userInfoWithSocket,
   userList,
   flytoMemberLocation,
   mapMain,
@@ -93,6 +95,12 @@ const UsersMenuList = ({
             user = {
               ...user,
               ...userInformationData,
+            };
+          }
+          if (user?.uuid === userInfoWithSocket?.uuid) {
+            user = {
+              ...user,
+              ...userInfoWithSocket,
             };
           }
 

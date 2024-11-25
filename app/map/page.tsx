@@ -28,6 +28,11 @@ import CreateGroup from "./../component/map/CreateGroup";
 import GroupManagement from "./../component/map/GroupManagement";
 import { handleGroupList } from "./../utils/api/groupInformation";
 import JoinGroup from "../component/map/JoinGroup";
+import { io } from "socket.io-client";
+
+// Establish Socket.IO connection
+
+const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL);
 
 export default function Home() {
   const {
@@ -59,7 +64,8 @@ export default function Home() {
   const { data: session, status } = useSession();
   const [userList, setUserList] = useState([]);
   const [placesList, setPlacesList] = useState([]);
-  const [userInformationData, setUserInformationData] = useState({});
+  const [userInformationData, setUserInformationData] = useState<any>({});
+  const [userInfoWithSocket, setUserInfoWithSocket] = useState({});
   const [
     locationWithStatusInformationData,
     setLocationWithStatusInformationData,
@@ -94,6 +100,23 @@ export default function Home() {
     setMoveCreateGroupForm(true);
     setMoveLocationWithStatusForm(!moveLocationWithStatusForm);
   };
+
+  // socket code start
+  useEffect(() => {
+    if (userInformationData?.uuid) {
+      socket.emit("joinUserGroups", userInformationData.uuid);
+
+      // Listen for updates related to the user
+      socket.on("userLocationUpdated", (data) => {
+        setUserInfoWithSocket(data?.userInfo);
+      });
+    }
+
+    return () => {
+      socket.off("locationUpdated");
+    };
+  }, [userInformationData?.uuid]);
+  // socket code end
 
   useEffect(() => {
     if (status === "unauthenticated") {
@@ -370,6 +393,7 @@ export default function Home() {
                 <PlacesMenu />
                 {usersMenuListModalOpen && (
                   <UsersMenuList
+                    userInfoWithSocket={userInfoWithSocket}
                     userList={userList}
                     flytoMemberLocation={flytoMemberLocation}
                     mapMain={mapMain}
@@ -392,6 +416,7 @@ export default function Home() {
 
       <Grid>
         <Map
+          userInfoWithSocket={userInfoWithSocket}
           placesList={placesList}
           userList={userList}
           flytoMemberLocation={flytoMemberLocation}

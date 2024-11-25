@@ -4,9 +4,10 @@ import Grid from "@mui/material/Grid2";
 import { Colors } from "./../../theme/colors";
 import { IconButton } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import axios from "axios";
+import { io } from "socket.io-client";
 
 import {
   TextField,
@@ -33,6 +34,10 @@ interface FormValues {
   charging: boolean;
   address: string;
 }
+
+// Establish Socket.IO connection
+
+const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL);
 
 const LocationWithStatus = ({
   usersMenuDataList,
