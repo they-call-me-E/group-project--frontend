@@ -63,9 +63,12 @@ export default function Home() {
   const [menuOpen, setMenuOpen] = useState(false);
   const { data: session, status } = useSession();
   const [userList, setUserList] = useState([]);
-  const [placesList, setPlacesList] = useState([]);
+  const [placesList, setPlacesList] = useState<any>([]);
   const [userInformationData, setUserInformationData] = useState<any>({});
   const [userInfoWithSocket, setUserInfoWithSocket] = useState({});
+  const [createFencesInfoWithSocket, setCreateFencesInfoWithSocket] = useState(
+    {}
+  );
   const [
     locationWithStatusInformationData,
     setLocationWithStatusInformationData,
@@ -119,9 +122,24 @@ export default function Home() {
     }
 
     return () => {
-      socket.off("locationUpdated");
+      socket.off("userLocationUpdated");
     };
   }, [userInformationData?.uuid, groupId]);
+
+  useEffect(() => {
+    if (groupId) {
+      socket.emit("joinFencesWithGroups", groupId);
+      // Listen for create fences related event
+      socket.on("createfences", (data) => {
+        setPlacesList((prevList: any) => [...prevList, data?.document]);
+        setCreateFencesInfoWithSocket(data?.document);
+      });
+    }
+
+    return () => {
+      socket.off("createfences");
+    };
+  }, [groupId]);
   // socket code end
 
   useEffect(() => {
@@ -408,6 +426,7 @@ export default function Home() {
                 )}
                 {placesMenuListModalOpen && (
                   <PlacesMenuList
+                    createFencesInfoWithSocket={createFencesInfoWithSocket}
                     placesList={placesList}
                     flytoMemberLocation={flytoMemberLocation}
                     mapMain={mapMain}

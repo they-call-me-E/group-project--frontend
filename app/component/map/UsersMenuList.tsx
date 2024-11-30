@@ -106,6 +106,7 @@ const UsersMenuList = ({
 
           return (
             <ListItem
+              key={index}
               onClick={() => {
                 if (
                   mapMain &&
