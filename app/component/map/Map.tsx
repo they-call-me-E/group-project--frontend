@@ -38,7 +38,6 @@ const Map = ({
   mapMain,
   setMapMain,
 }: MapProps) => {
- 
   const { data: session, status }: { data: any; status: string } = useSession();
   const {
     markersArray,
@@ -502,19 +501,19 @@ const Map = ({
         // get user data if userList array length is 0 code start
         handleUserInformation(session?.user?.token, session?.user?.id)
           .then((res: any) => {
-            if (res?.data?.user?.status?.isMoving) {
-              membersData?.push({
-                id: res?.data?.user?.uuid,
-                name: res?.data?.user?.name,
-                location: res?.data?.user?.location,
-                status: res?.data?.user?.status,
-                avatar: res?.data?.user?.avatar
-                  ? `${res?.data?.user?.avatar}`
-                  : "/default_user.png",
-                badgeImageUrl:
-                  "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png",
-              });
-            }
+            // if (res?.data?.user?.status?.isMoving) {
+            membersData?.push({
+              id: res?.data?.user?.uuid,
+              name: res?.data?.user?.name,
+              location: res?.data?.user?.location,
+              status: res?.data?.user?.status,
+              avatar: res?.data?.user?.avatar
+                ? `${res?.data?.user?.avatar}`
+                : "/default_user.png",
+              badgeImageUrl:
+                "https://raw.githubusercontent.com/they-call-me-E/Sharptools/main/CustomeTile/Mapviewer/driving.png",
+            });
+            // }
 
             // removePreviousMarkers(mapMain);
             removePreviousUsersMarkers(mapMain);
@@ -528,8 +527,9 @@ const Map = ({
       } else if (userList?.length > 0) {
         userList?.forEach((user) => {
           if (
-            Object.keys(user?.location).length !== 0 &&
-            user?.status?.isMoving
+            Object.keys(user?.location).length !== 0
+
+            // && user?.status?.isMoving
           ) {
             membersData.push({
               id: user?.uuid,
@@ -551,6 +551,7 @@ const Map = ({
       placesData.forEach(function (item) {
         addPlaces(item, mapMain);
       });
+
       membersData.forEach(function (item) {
         addMember(item, mapMain);
       });
