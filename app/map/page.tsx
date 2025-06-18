@@ -105,6 +105,7 @@ export default function Home() {
   };
 
   // socket code start
+
   useEffect(() => {
     if (userInformationData?.uuid) {
       socket.emit("joinUserGroups", userInformationData.uuid);
@@ -146,6 +147,11 @@ export default function Home() {
     if (status === "unauthenticated") {
       router.push("/");
     } else if (status === "authenticated") {
+      // set user id with socket when user will be disconnected
+      io(process.env.NEXT_PUBLIC_IMAGE_API_URL, {
+        // @ts-ignore
+        query: { userId: session?.user?.id },
+      });
       // user information
       // @ts-ignore
       handleUserInformation(session?.user?.token, session?.user?.id)
