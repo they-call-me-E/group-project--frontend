@@ -144,14 +144,52 @@ export default function Home() {
   // socket code end
 
   useEffect(() => {
-    if (status === "unauthenticated") {
-      router.push("/");
-    } else if (status === "authenticated") {
-      // set user id with socket when user will be disconnected
-      io(process.env.NEXT_PUBLIC_IMAGE_API_URL, {
+    //  if (userInformationData?.uuid) {
+    //   socket.emit("joinUserGroups", userInformationData.uuid);
+
+    //   // Listen for updates related to the user
+    //   socket.on("userLocationUpdated", (data) => {
+    //     if (groupId) {
+    //       usersMenuDataList(groupId)
+    //         .then((res) => {
+    //           setUserInfoWithSocket(data?.userInfo);
+    //         })
+    //         .catch((error) => {});
+    //     }
+    //   });
+    // }
+
+    if (userInformationData?.uuid) {
+      // set user id with socket when user will be disconnected code start
+      io(process.env.NEXT_PUBLIC_SOCKET_URL, {
         // @ts-ignore
         query: { userId: session?.user?.id },
       });
+      socket.on("userDisconnected", (data) => {
+        // console.log("User disconnected from a group:", data.userInfo);
+        // console.log(groupId);
+      });
+
+      // set user id with socket when user will be disconnected code end
+
+      // set user id with socket when user will be connected code start
+      socket.on("userConnected", (data) => {
+        console.log("User connected from a group:", data.userInfo);
+        console.log(groupId);
+      });
+
+      // set user id with socket when user will be connected code end
+      return () => {
+        socket.off("userDisconnected");
+        socket.off("userConnected");
+      };
+    }
+  }, [userInformationData?.uuid, groupId]);
+
+  useEffect(() => {
+    if (status === "unauthenticated") {
+      router.push("/");
+    } else if (status === "authenticated") {
       // user information
       // @ts-ignore
       handleUserInformation(session?.user?.token, session?.user?.id)
